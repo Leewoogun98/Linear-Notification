@@ -11,11 +11,14 @@ export async function computeSignature(body: string, secret: string): Promise<st
   return [...new Uint8Array(mac)].map((b) => b.toString(16).padStart(2, "0")).join("");
 }
 
-// 상수시간 비교(길이 다르면 즉시 false).
+// 상수시간 비교(길이가 달라도 조기 반환하지 않음).
 function timingSafeEqual(a: string, b: string): boolean {
-  if (a.length !== b.length || a.length === 0) return false;
-  let diff = 0;
-  for (let i = 0; i < a.length; i++) diff |= a.charCodeAt(i) ^ b.charCodeAt(i);
+  const len = Math.max(a.length, b.length);
+  if (len === 0) return false;
+  let diff = a.length ^ b.length;
+  for (let i = 0; i < len; i++) {
+    diff |= (a.charCodeAt(i) || 0) ^ (b.charCodeAt(i) || 0);
+  }
   return diff === 0;
 }
 

@@ -19,4 +19,17 @@ describe("verifyLinearSignature", () => {
   it("서명 헤더가 비어 있으면 false", async () => {
     expect(await verifyLinearSignature("{}", "", SECRET)).toBe(false);
   });
+
+  it("비밀키가 다르면 false", async () => {
+    const body = JSON.stringify({ action: "create", type: "Issue" });
+    const sig = await computeSignature(body, "other-secret");
+    expect(await verifyLinearSignature(body, sig, SECRET)).toBe(false);
+  });
+
+  it("서명이 변조되면 false", async () => {
+    const body = JSON.stringify({ action: "create", type: "Issue" });
+    const sig = await computeSignature(body, SECRET);
+    const tampered = (sig[0] === "0" ? "1" : "0") + sig.slice(1);
+    expect(await verifyLinearSignature(body, tampered, SECRET)).toBe(false);
+  });
 });
