@@ -1,0 +1,15 @@
+name = "linear-noti-relay"
+main = "src/worker.ts"
+compatibility_date = "2024-06-20"
+
+[[durable_objects.bindings]]
+name = "RELAY"
+class_name = "RelayDurableObject"
+
+[[migrations]]
+tag = "v1"
+new_classes = ["RelayDurableObject"]
+
+# 시크릿은 `wrangler secret put` 으로 등록:
+#   LINEAR_WEBHOOK_SECRET  — Linear webhook 서명 검증용
+#   APP_AUTH_TOKEN         — 데스크탑 앱 WS 접속 토큰
