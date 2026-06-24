@@ -1,4 +1,4 @@
-name: Build & Release
+name: 배포
 
 # v* 태그를 푸시하면(예: v0.1.0) mac/windows 인스톨러를 빌드해 GitHub Release로 올린다.
 # Actions 탭에서 수동 실행(workflow_dispatch)하면 빌드 후 아티팩트만 남긴다(릴리스 없음).
@@ -22,7 +22,7 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
           cache: npm
           cache-dependency-path: LinearApp/package-lock.json
 
