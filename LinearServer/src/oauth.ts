@@ -36,15 +36,15 @@ export async function exchangeCode(
   return json.access_token;
 }
 
-// access token → { id, name }
-export async function fetchViewer(accessToken: string): Promise<{ id: string; name: string }> {
+// access token → { id, name, displayName }
+export async function fetchViewer(accessToken: string): Promise<{ id: string; name: string; displayName: string }> {
   const res = await fetch("https://api.linear.app/graphql", {
     method: "POST",
     headers: { "content-type": "application/json", authorization: `Bearer ${accessToken}` },
-    body: JSON.stringify({ query: "{ viewer { id name } }" }),
+    body: JSON.stringify({ query: "{ viewer { id name displayName } }" }),
   });
   if (!res.ok) throw new Error(`viewer query failed: ${res.status}`);
-  const json = (await res.json()) as { data?: { viewer?: { id: string; name: string } } };
+  const json = (await res.json()) as { data?: { viewer?: { id: string; name: string; displayName: string } } };
   if (!json.data?.viewer) throw new Error("no viewer");
   return json.data.viewer;
 }

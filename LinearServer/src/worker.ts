@@ -45,7 +45,7 @@ export default {
         await relayStub(env).fetch("https://do/session/put", {
           method: "POST",
           headers: { "content-type": "application/json" },
-          body: JSON.stringify({ token, session: { userId: viewer.id, name: viewer.name }, pairing: state }),
+          body: JSON.stringify({ token, session: { userId: viewer.id, name: viewer.name, displayName: viewer.displayName }, pairing: state }),
         });
         return html(`<b>${viewer.name}</b> 님 로그인 완료 ✓<br>앱으로 돌아가세요. 이 창은 닫아도 됩니다.`);
       } catch (e) {

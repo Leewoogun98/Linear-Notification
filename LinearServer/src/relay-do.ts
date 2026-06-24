@@ -8,6 +8,7 @@ const PAIR_TTL_MS = 5 * 60_000;
 interface Session {
   userId: string;
   name: string;
+  displayName: string;
 }
 
 export class RelayDurableObject {
@@ -50,10 +51,10 @@ export class RelayDurableObject {
       const pair = new WebSocketPair();
       const [client, server] = [pair[0], pair[1]];
       this.ctx.acceptWebSocket(server);
-      server.serializeAttachment({ userId: session.userId });
+      server.serializeAttachment({ userId: session.userId, displayName: session.displayName });
       console.log("[connect] userId=", session.userId, "name=", session.name);
 
-      const hello: HelloMessage = { kind: "hello", you: { id: session.userId, name: session.name } };
+      const hello: HelloMessage = { kind: "hello", you: { id: session.userId, name: session.name, displayName: session.displayName } };
       server.send(JSON.stringify(hello));
 
       const since = Number(url.searchParams.get("since") ?? "0");
@@ -66,8 +67,13 @@ export class RelayDurableObject {
     // 검증된 webhook 이벤트 (worker가 forward)
     if (url.pathname === "/broadcast" && request.method === "POST") {
       const event = (await request.json()) as LinearWebhookEvent;
-      const recipients = computeRecipients(event);
-      const connectedIds = this.ctx.getWebSockets().map((ws) => (ws.deserializeAttachment() as { userId: string } | null)?.userId);
+      const now = Date.now();
+      const sockets = this.ctx.getWebSockets();
+      const connected = sockets
+        .map((ws) => ws.deserializeAttachment() as { userId: string; displayName: string } | null)
+        .filter((a): a is { userId: string; displayName: string } => !!a);
+      const recipients = computeRecipients(event, connected);
+      const connectedIds = connected.map((a) => a.userId);
       console.log("[broadcast] type=", event.type, "action=", event.action,
         "dataKeys=", JSON.stringify(Object.keys(event.data ?? {})),
         "subscriberIds=", JSON.stringify((event.data as any)?.subscriberIds),
@@ -79,11 +85,10 @@ export class RelayDurableObject {
         "issue.subscriberIds=", JSON.stringify((event.data as any)?.issue?.subscriberIds),
         "userId=", JSON.stringify((event.data as any)?.userId),
         "user=", JSON.stringify((event.data as any)?.user));
-      const now = Date.now();
       const msg = this.buffer.add(event, now, recipients);
       const payload = JSON.stringify(msg);
       const targets = new Set(recipients);
-      for (const ws of this.ctx.getWebSockets()) {
+      for (const ws of sockets) {
         const att = ws.deserializeAttachment() as { userId: string } | null;
         if (att && targets.has(att.userId)) {
           try { ws.send(payload); } catch { /* 닫힌 소켓 무시 */ }

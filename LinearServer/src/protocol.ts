@@ -16,5 +16,5 @@ export interface RelayMessage {
 // 연결 직후 릴레이가 앱에게 "당신은 누구"임을 알리는 메시지
 export interface HelloMessage {
   kind: "hello";
-  you: { id: string; name: string };
+  you: { id: string; name: string; displayName: string };
 }
