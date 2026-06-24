@@ -62,13 +62,21 @@ app.whenReady().then(() => {
 
   ipcMain.handle("auth:status", () => ({ loggedIn: !!settings.sessionToken, name: settings.me.name }));
   ipcMain.handle("auth:login", async () => {
+    console.log("[auth:login] relayUrl =", JSON.stringify(settings.relayUrl));
     try {
-      const token = await login(settings.relayUrl, (url) => shell.openExternal(url));
+      const token = await login(settings.relayUrl, async (url) => {
+        console.log("[auth:login] opening browser:", url);
+        await shell.openExternal(url);
+        console.log("[auth:login] shell.openExternal resolved");
+      });
       settings = { ...settings, sessionToken: token };
       saveSettings(settingsFile(), settings);
       client.stop(); client.start();
       return { ok: true, name: settings.me.name };
-    } catch (e) { return { ok: false, error: (e as Error).message }; }
+    } catch (e) {
+      console.error("[auth:login] FAILED:", e);
+      return { ok: false, error: (e as Error).message };
+    }
   });
   ipcMain.handle("auth:logout", () => {
     settings = { ...settings, sessionToken: "", me: { id: "", name: "" } };

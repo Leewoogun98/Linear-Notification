@@ -94,9 +94,16 @@ async function renderSettings() {
 
 $("loginBtn").addEventListener("click", async () => {
   ($("loginBtn") as HTMLButtonElement).textContent = "브라우저에서 로그인 중…";
-  const r = await api.auth.login();
-  ($("loginBtn") as HTMLButtonElement).textContent = "Linear로 로그인";
-  if (r.ok) { show("home"); renderHome(); }
+  const hint = document.querySelector("#view-login .login-hint") as HTMLElement | null;
+  try {
+    const r = await api.auth.login();
+    ($("loginBtn") as HTMLButtonElement).textContent = "Linear로 로그인";
+    if (r.ok) { show("home"); renderHome(); }
+    else if (hint) { hint.textContent = "로그인 실패: " + (r.error ?? "알 수 없는 오류"); hint.style.color = "#ff9eb5"; }
+  } catch (e) {
+    ($("loginBtn") as HTMLButtonElement).textContent = "Linear로 로그인";
+    if (hint) { hint.textContent = "오류(api 미연결?): " + (e as Error).message; hint.style.color = "#ff9eb5"; }
+  }
 });
 $("gearBtn").addEventListener("click", () => { show("settings"); renderSettings(); });
 $("backBtn").addEventListener("click", () => { show("home"); renderHome(); });
