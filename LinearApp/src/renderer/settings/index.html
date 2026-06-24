@@ -5,14 +5,13 @@
     <link rel="stylesheet" href="settings.css" />
   </head>
   <body>
-    <h2>연결</h2>
-    <label>Relay URL <input id="relayUrl" placeholder="wss://...workers.dev" /></label>
-    <label>Auth Token <input id="authToken" /></label>
-    <label>내 Linear User ID <input id="meId" /></label>
-    <label>내 멘션 핸들(이름) <input id="meName" /></label>
+    <h2>계정</h2>
+    <p id="authStatus" class="hint">로그인 상태 확인 중…</p>
+    <button id="login">Linear로 로그인</button>
 
-    <h2>규칙</h2>
-    <p class="hint">규칙은 JSON 배열로 편집합니다. 각 규칙: { name, enabled, eventTypes[], actions[], filters[] }</p>
+    <h2>규칙 (선택)</h2>
+    <p class="hint">비워두면 나와 관련된 모든 알림이 표시됩니다. 좁히려면 규칙을 추가하세요.
+      각 규칙: { name, enabled, eventTypes[], actions[], filters[] }</p>
     <textarea id="rules" rows="14" spellcheck="false"></textarea>
     <div id="error" class="error"></div>
 
