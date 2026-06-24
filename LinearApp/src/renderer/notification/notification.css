@@ -1,10 +1,12 @@
 html, body { margin: 0; background: transparent; overflow: hidden; font-family: -apple-system, "Segoe UI", sans-serif; }
 #card {
-  margin: 8px; padding: 16px 18px; border-radius: 18px;
+  margin: 8px; padding: 16px 20px; border-radius: 18px;
   background: #2a2d3d; color: #eceefb; cursor: pointer;
-  border: 1px solid #3a3d52; border-left: 4px solid var(--accent, #8b7bf0);
+  border: 1px solid #3a3d52; border-left: 5px solid var(--accent, #8b7bf0);
   box-shadow: 0 10px 30px rgba(0,0,0,0.45);
+  animation: pop .28s cubic-bezier(.2, .9, .3, 1.3);
 }
-#title { font-size: 14px; font-weight: 700; margin-bottom: 6px; }
-#body { font-size: 13px; line-height: 1.4; white-space: pre-wrap; word-break: break-word;
-  max-height: 160px; overflow: hidden; color: #b6b9d0; }
+@keyframes pop { from { transform: scale(.9); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+#heading { font-size: 16px; font-weight: 800; color: var(--accent, #8b7bf0); margin-bottom: 4px; }
+#title { font-size: 12px; color: #9a9db5; margin-bottom: 6px; }
+#body { font-size: 15px; line-height: 1.45; white-space: pre-wrap; word-break: break-word; max-height: 180px; overflow: hidden; }

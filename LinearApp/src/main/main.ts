@@ -15,6 +15,11 @@ const ACCENT: Record<Category, string> = {
   mention: "#b9a7ff", projectUpdate: "#7fe0c0",
 };
 
+const HEADING: Record<Category, string> = {
+  mention: "멘션이용^^",
+  projectUpdate: "프로젝트용^^",
+};
+
 let tray: Tray | null = null;
 let win: BrowserWindow | null = null;
 let settings: Settings;
@@ -97,7 +102,7 @@ app.whenReady().then(() => {
 
   ipcMain.handle("issue:open", (_e, url: string) => { if (url) shell.openExternal(url); });
   ipcMain.handle("settings:test", () => {
-    notifications.show({ title: "테스트 알림", body: "정중앙 알림이 정상 동작합니다.", accent: ACCENT.mention });
+    notifications.show({ heading: "테스트^^", title: "테스트 알림", body: "정중앙 알림이 정상 동작합니다. 본문 글씨가 이만큼 커졌어요!", accent: ACCENT.mention });
   });
 
   client = new RelayClient(
@@ -111,7 +116,7 @@ app.whenReady().then(() => {
       if (!rep) return;
       const c = formatNotification(msg.event);
       store.add({ category: rep, title: c.title, body: c.body, issueUrl: c.issueUrl, identifier: c.identifier, receivedAt: msg.receivedAt });
-      notifications.show({ title: c.title, body: c.body, accent: ACCENT[rep] });
+      notifications.show({ heading: HEADING[rep], title: c.title, body: c.body, accent: ACCENT[rep] });
       pushNotiUpdate();
     },
     (you) => {

@@ -2,13 +2,14 @@ import { BrowserWindow, screen, shell } from "electron";
 import { join } from "node:path";
 
 export interface PopupContent {
+  heading?: string;
   title: string;
   body: string;
   accent?: string;
 }
 
 const WIDTH = 380;
-const HEIGHT = 120;
+const HEIGHT = 150;
 const GAP = 10;
 const AUTO_MS = 5000;
 
