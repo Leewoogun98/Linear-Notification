@@ -1,5 +1,5 @@
-export type Category = "mention" | "comment" | "assigned" | "projectUpdate";
-export const ALL_CATEGORIES: Category[] = ["mention", "comment", "assigned", "projectUpdate"];
+export type Category = "mention" | "projectUpdate";
+export const ALL_CATEGORIES: Category[] = ["mention", "projectUpdate"];
 
 export interface Identity {
   id: string;
@@ -18,7 +18,7 @@ export const DEFAULT_SETTINGS: Settings = {
   relayUrl: "wss://linear-noti-relay.bome00519.workers.dev",
   sessionToken: "",
   me: { id: "", name: "", displayName: "" },
-  enabledCategories: ["mention", "comment", "assigned", "projectUpdate"],
+  enabledCategories: ["mention", "projectUpdate"],
 };
 
 export interface StoredNotification {

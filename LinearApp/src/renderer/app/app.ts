@@ -1,4 +1,4 @@
-type Category = "mention" | "comment" | "assigned" | "projectUpdate";
+type Category = "mention" | "projectUpdate";
 interface StoredNotification {
   id: string;
   category: Category;
@@ -37,11 +37,9 @@ function show(v: keyof typeof views) {
 
 const CAT_META: Record<Category, { icon: string; label: string; tagBg: string; iconColor: string }> = {
   mention: { icon: "@", label: "나를 멘션", tagBg: "#3a3170", iconColor: "#b9a7ff" },
-  comment: { icon: "💬", label: "코멘트", tagBg: "#173a4a", iconColor: "#7fc8e0" },
-  assigned: { icon: "◎", label: "담당 이슈 변경", tagBg: "#3a3115", iconColor: "#f0c674" },
   projectUpdate: { icon: "▤", label: "프로젝트 업데이트", tagBg: "#143a30", iconColor: "#7fe0c0" },
 };
-const ALL: Category[] = ["mention", "comment", "assigned", "projectUpdate"];
+const ALL: Category[] = ["mention", "projectUpdate"];
 
 function relTime(ts: number): string {
   const s = Math.floor((Date.now() - ts) / 1000);
@@ -60,7 +58,7 @@ async function renderHome() {
   const list = $("list");
   list.innerHTML = "";
   for (const n of items) {
-    const m = CAT_META[n.category];
+    const m = CAT_META[n.category as Category] ?? CAT_META.mention;
     const card = document.createElement("div");
     card.className = "ncard" + (n.read ? "" : " unread");
     card.innerHTML =

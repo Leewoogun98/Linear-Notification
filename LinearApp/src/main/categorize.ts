@@ -20,13 +20,11 @@ export function categorize(event: LinearWebhookEvent, me: Identity): Category[] 
     (handle !== "" && text.includes(`@${handle}`)) ||
     (me.id !== "" && text.includes(me.id.toLowerCase()));
   if (mentioned) cats.push("mention");
-  if (event.type === "Comment") cats.push("comment");
-  if (event.type === "Issue" && me.id !== "" && String(d.assignee?.id ?? "") === me.id) cats.push("assigned");
   if (event.type === "ProjectUpdate" || event.type === "Project") cats.push("projectUpdate");
   return cats;
 }
 
-const PRIORITY: Category[] = ["mention", "assigned", "comment", "projectUpdate"];
+const PRIORITY: Category[] = ["mention", "projectUpdate"];
 export function representativeCategory(cats: Category[]): Category | null {
   for (const c of PRIORITY) if (cats.includes(c)) return c;
   return null;

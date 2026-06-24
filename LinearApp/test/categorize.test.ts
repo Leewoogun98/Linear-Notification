@@ -13,43 +13,28 @@ const issue = (over: Partial<LinearWebhookEvent> = {}): LinearWebhookEvent => ({
 });
 
 describe("categorize", () => {
-  it("담당 이슈 → assigned", () => {
-    expect(categorize(issue(), me)).toContain("assigned");
-  });
-  it("담당자가 내가 아니면 assigned 아님", () => {
-    const e = issue({ data: { identifier: "ENG-2", title: "x", assignee: { id: "other" } } });
-    expect(categorize(e, me)).not.toContain("assigned");
-  });
   it("본문에 내 멘션 → mention", () => {
     const e = issue({ data: { title: "hey @wglee 봐줘", assignee: { id: "other" } } });
     expect(categorize(e, me)).toContain("mention");
-  });
-  it("코멘트 → comment", () => {
-    const c: LinearWebhookEvent = { action: "create", type: "Comment",
-      data: { body: "확인했어요", issue: { title: "Fix login", identifier: "ENG-1" }, user: { name: "Bob" } } };
-    expect(categorize(c, me)).toContain("comment");
   });
   it("ProjectUpdate → projectUpdate", () => {
     const p: LinearWebhookEvent = { action: "create", type: "ProjectUpdate", data: { body: "이번주 업데이트" } };
     expect(categorize(p, me)).toContain("projectUpdate");
   });
-  it("멘션한 코멘트는 두 카테고리", () => {
+  it("멘션한 코멘트는 mention 카테고리", () => {
     const c: LinearWebhookEvent = { action: "create", type: "Comment",
       data: { body: "@wglee 확인", issue: { title: "t" }, user: { name: "Bob" } } };
     const cats = categorize(c, me);
     expect(cats).toContain("mention");
-    expect(cats).toContain("comment");
+    expect(cats).not.toContain("comment");
   });
 });
 
 describe("representativeCategory", () => {
-  it("우선순위 mention > assigned > comment > projectUpdate", () => {
-    expect(representativeCategory(["comment", "mention"])).toBe("mention");
-    expect(representativeCategory(["comment", "assigned"])).toBe("assigned");
+  it("우선순위 mention > projectUpdate", () => {
+    expect(representativeCategory(["projectUpdate", "mention"])).toBe("mention");
+    expect(representativeCategory(["projectUpdate"])).toBe("projectUpdate");
     expect(representativeCategory([])).toBe(null);
-  });
-  it("mention이 assigned보다 우선", () => {
-    expect(representativeCategory(["assigned", "mention"])).toBe("mention");
   });
 });
 

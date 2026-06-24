@@ -12,7 +12,7 @@ const settingsFile = () => join(app.getPath("userData"), "settings.json");
 const notiFile = () => join(app.getPath("userData"), "notifications.json");
 
 const ACCENT: Record<Category, string> = {
-  mention: "#b9a7ff", comment: "#7fc8e0", assigned: "#f0c674", projectUpdate: "#7fe0c0",
+  mention: "#b9a7ff", projectUpdate: "#7fe0c0",
 };
 
 let tray: Tray | null = null;
