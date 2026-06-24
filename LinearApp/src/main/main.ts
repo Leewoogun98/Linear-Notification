@@ -8,6 +8,8 @@ import { NotificationManager } from "./notification-manager";
 import { login } from "./auth-client";
 import type { Settings, Category } from "../shared/types";
 
+app.setName("Linear Noti");
+
 const settingsFile = () => join(app.getPath("userData"), "settings.json");
 const notiFile = () => join(app.getPath("userData"), "notifications.json");
 
@@ -62,6 +64,9 @@ function buildTray() {
 }
 
 app.whenReady().then(() => {
+  if (process.platform === "darwin" && app.dock && !app.isPackaged) {
+    try { app.dock.setIcon(join(__dirname, "../../build/icon.png")); } catch { /* dev 전용 */ }
+  }
   settings = loadSettings(settingsFile());
   store = new NotificationStore(notiFile());
 

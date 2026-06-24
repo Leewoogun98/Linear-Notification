@@ -1,5 +1,6 @@
 {
   "name": "linear-noti-app",
+  "productName": "Linear Noti",
   "version": "0.1.0",
   "private": true,
   "main": "dist/main/main.js",
@@ -11,20 +12,30 @@
     "dist": "npm run build && electron-builder"
   },
   "devDependencies": {
+    "@types/ws": "^8.5.10",
     "electron": "^31.0.0",
     "electron-builder": "^24.13.0",
+    "sharp": "^0.35.2",
     "typescript": "^5.5.0",
-    "vitest": "^2.0.0",
-    "@types/ws": "^8.5.10"
+    "vitest": "^2.0.0"
   },
   "dependencies": {
-    "ws": "^8.17.0",
-    "electron-store": "^8.2.0"
+    "electron-store": "^8.2.0",
+    "ws": "^8.17.0"
   },
   "build": {
     "appId": "com.woogun.linearnoti",
-    "files": ["dist/**/*"],
-    "mac": { "target": "dmg" },
-    "win": { "target": "nsis" }
+    "productName": "Linear Noti",
+    "files": [
+      "dist/**/*"
+    ],
+    "mac": {
+      "target": "dmg",
+      "icon": "build/icon.icns"
+    },
+    "win": {
+      "target": "nsis",
+      "icon": "build/icon.png"
+    }
   }
 }
