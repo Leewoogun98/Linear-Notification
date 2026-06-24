@@ -24,6 +24,10 @@ describe("computeRecipients", () => {
     const p = ev({ name: "New Project", memberIds: ["u_me", "u_other"] }, "Project");
     expect(computeRecipients(p, []).sort()).toEqual(["u_me", "u_other"]);
   });
+  it("프로젝트 leadId / creatorId 포함", () => {
+    const p = ev({ name: "P", leadId: "u_lead", creatorId: "u_creator" }, "Project");
+    expect(computeRecipients(p, []).sort()).toEqual(["u_creator", "u_lead"]);
+  });
   it("관련 정보 없으면 빈 배열", () => {
     expect(computeRecipients(ev({ title: "x" }), [])).toEqual([]);
   });
