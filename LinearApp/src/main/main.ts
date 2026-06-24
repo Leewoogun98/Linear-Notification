@@ -105,7 +105,21 @@ app.whenReady().then(() => {
     saveSettings(settingsFile(), settings);
   });
 
-  ipcMain.handle("issue:open", (_e, url: string) => { if (url) shell.openExternal(url); });
+  ipcMain.handle("issue:open", async (_e, url: string) => {
+    if (!url || typeof url !== "string") return;
+    // Linear 데스크탑 앱이 설치돼 있으면 linear:// 딥링크로 앱에서 열고, 없으면(또는 실패하면) 브라우저로 폴백.
+    if (url.startsWith("https://linear.app/")) {
+      const deep = url.replace("https://linear.app/", "linear://");
+      console.log("[issue:open] try app:", deep);
+      try {
+        await shell.openExternal(deep);
+        return;
+      } catch (e) {
+        console.log("[issue:open] app open failed, fallback to browser:", (e as Error).message);
+      }
+    }
+    await shell.openExternal(url);
+  });
   ipcMain.handle("settings:test", () => {
     notifications.show({ heading: "테스트^^", title: "테스트 알림", body: "정중앙 알림이 정상 동작합니다. 본문 글씨가 이만큼 커졌어요!", accent: ACCENT.mention });
   });

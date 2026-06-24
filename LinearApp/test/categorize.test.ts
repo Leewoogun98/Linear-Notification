@@ -62,6 +62,11 @@ describe("formatNotification", () => {
     expect(r.title).toContain("Bob");
     expect(r.body).toContain("looks good");
   });
+  it("코멘트: 부모 이슈 url을 issueUrl로 사용", () => {
+    const c: LinearWebhookEvent = { action: "create", type: "Comment",
+      data: { body: "hi", issue: { title: "t", identifier: "ENG-1", url: "https://linear.app/x/issue/ENG-1" }, user: { name: "Bob" } } };
+    expect(formatNotification(c).issueUrl).toBe("https://linear.app/x/issue/ENG-1");
+  });
   it("이슈: top-level event.url을 우선 사용", () => {
     const e: LinearWebhookEvent = {
       action: "create", type: "Issue", url: "https://linear.app/top/ENG-9",

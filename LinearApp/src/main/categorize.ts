@@ -66,7 +66,8 @@ export function formatNotification(event: LinearWebhookEvent): NotificationConte
   const actor = event.actor?.name ?? d.user?.name ?? "Someone";
   const issueUrl =
     (typeof event.url === "string" ? event.url : undefined) ??
-    (typeof d.url === "string" ? d.url : undefined);
+    (typeof d.url === "string" ? d.url : undefined) ??
+    (typeof d.issue?.url === "string" ? d.issue.url : undefined);
   if (event.type === "Comment") {
     const issueTitle = d.issue?.title ? ` on "${d.issue.title}"` : "";
     return {
