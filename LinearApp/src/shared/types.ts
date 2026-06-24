@@ -1,4 +1,5 @@
 export type Category = "mention" | "projectUpdate";
+export type PopupPosition = "center" | "top-right" | "top-left" | "bottom-right" | "bottom-left";
 export const ALL_CATEGORIES: Category[] = ["mention", "projectUpdate"];
 
 export interface Identity {
@@ -13,6 +14,7 @@ export interface Settings {
   me: Identity;
   enabledCategories: Category[];
   muteOwnChanges: boolean;
+  popupPosition: PopupPosition;
 }
 
 export const DEFAULT_SETTINGS: Settings = {
@@ -21,6 +23,7 @@ export const DEFAULT_SETTINGS: Settings = {
   me: { id: "", name: "", displayName: "" },
   enabledCategories: ["mention", "projectUpdate"],
   muteOwnChanges: true,
+  popupPosition: "center",
 };
 
 export interface StoredNotification {

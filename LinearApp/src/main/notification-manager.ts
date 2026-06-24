@@ -1,5 +1,6 @@
 import { BrowserWindow, screen, shell } from "electron";
 import { join } from "node:path";
+import type { PopupPosition } from "../shared/types";
 
 export interface PopupContent {
   heading?: string;
@@ -15,6 +16,11 @@ const AUTO_MS = 5000;
 
 export class NotificationManager {
   private windows: BrowserWindow[] = [];
+  private position: PopupPosition = "center";
+  setPosition(p: PopupPosition) {
+    this.position = p;
+    this.relayout();
+  }
 
   show(text: PopupContent) {
     const win = new BrowserWindow({
@@ -58,15 +64,34 @@ export class NotificationManager {
     this.relayout();
   }
 
-  // 화면 중앙을 기준으로 스택을 세로로 쌓는다.
   private relayout() {
     const { width, height } = screen.getPrimaryDisplay().workAreaSize;
-    const totalH = this.windows.length * HEIGHT + (this.windows.length - 1) * GAP;
-    let y = Math.round(height / 2 - totalH / 2);
-    const x = Math.round(width / 2 - WIDTH / 2);
-    for (const win of this.windows) {
-      if (!win.isDestroyed()) win.setBounds({ x, y, width: WIDTH, height: HEIGHT });
-      y += HEIGHT + GAP;
+    const M = 16;
+    const pos = this.position;
+    const x =
+      pos === "center" ? Math.round(width / 2 - WIDTH / 2)
+      : pos.includes("left") ? M
+      : width - WIDTH - M;
+
+    if (pos === "center") {
+      const totalH = this.windows.length * HEIGHT + (this.windows.length - 1) * GAP;
+      let y = Math.round(height / 2 - totalH / 2);
+      for (const win of this.windows) {
+        if (!win.isDestroyed()) win.setBounds({ x, y, width: WIDTH, height: HEIGHT });
+        y += HEIGHT + GAP;
+      }
+    } else if (pos.startsWith("top")) {
+      let y = M;
+      for (const win of this.windows) {
+        if (!win.isDestroyed()) win.setBounds({ x, y, width: WIDTH, height: HEIGHT });
+        y += HEIGHT + GAP;
+      }
+    } else {
+      let y = height - HEIGHT - M;
+      for (const win of this.windows) {
+        if (!win.isDestroyed()) win.setBounds({ x, y, width: WIDTH, height: HEIGHT });
+        y -= HEIGHT + GAP;
+      }
     }
   }
 }

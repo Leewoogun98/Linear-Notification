@@ -24,7 +24,7 @@ declare const api: {
     clearAll: () => Promise<void>;
     onUpdate: (cb: () => void) => void;
   };
-  settings: { getCategories: () => Promise<Category[]>; setCategories: (c: Category[]) => Promise<void>; getMuteOwn: () => Promise<boolean>; setMuteOwn: (v: boolean) => Promise<void> };
+  settings: { getCategories: () => Promise<Category[]>; setCategories: (c: Category[]) => Promise<void>; getMuteOwn: () => Promise<boolean>; setMuteOwn: (v: boolean) => Promise<void>; getPosition: () => Promise<string>; setPosition: (p: string) => Promise<void> };
   openIssue: (url: string) => Promise<void>;
   test: () => Promise<void>;
 };
@@ -104,6 +104,13 @@ async function renderSettings() {
   muteRow.className = "cat " + (mute ? "on" : "off");
   (muteRow.querySelector(".chk") as HTMLElement).textContent = mute ? "✓" : "";
   muteRow.onclick = async () => { await api.settings.setMuteOwn(!mute); renderSettings(); };
+
+  const posSel = $("posSelect") as HTMLSelectElement;
+  posSel.value = await api.settings.getPosition();
+  posSel.onchange = async () => {
+    await api.settings.setPosition(posSel.value);
+    await api.test(); // 새 위치에 샘플 팝업을 띄워 바로 확인
+  };
 }
 
 $("loginBtn").addEventListener("click", async () => {

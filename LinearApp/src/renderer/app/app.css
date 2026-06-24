@@ -57,3 +57,5 @@ html,body{margin:0;height:100%;background:var(--bg);color:var(--text);
 .settings-foot{padding:18px 16px;}
 .btn-ghost{padding:9px 16px;font-size:13px;border-radius:12px;background:var(--surface);
   border:0.5px solid #3a3d52;color:var(--text);cursor:pointer;}
+.sel{width:100%;box-sizing:border-box;padding:10px 12px;font-size:13px;border-radius:12px;
+  background:var(--surface);color:var(--text);border:0.5px solid #3a3d52;cursor:pointer;}

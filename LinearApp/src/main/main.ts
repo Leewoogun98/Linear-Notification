@@ -6,7 +6,7 @@ import { NotificationStore } from "./notification-store";
 import { RelayClient } from "./ws-client";
 import { NotificationManager } from "./notification-manager";
 import { login } from "./auth-client";
-import type { Settings, Category } from "../shared/types";
+import type { Settings, Category, PopupPosition } from "../shared/types";
 
 app.setName("Linear Noti");
 
@@ -68,6 +68,7 @@ app.whenReady().then(() => {
     try { app.dock.setIcon(join(__dirname, "../../build/icon.png")); } catch { /* dev 전용 */ }
   }
   settings = loadSettings(settingsFile());
+  notifications.setPosition(settings.popupPosition);
   store = new NotificationStore(notiFile());
 
   ipcMain.handle("auth:status", () => ({ loggedIn: !!settings.sessionToken, name: settings.me.name }));
@@ -103,6 +104,13 @@ app.whenReady().then(() => {
   ipcMain.handle("mute:set", (_e, v: boolean) => {
     settings = { ...settings, muteOwnChanges: !!v };
     saveSettings(settingsFile(), settings);
+  });
+
+  ipcMain.handle("pos:get", () => settings.popupPosition);
+  ipcMain.handle("pos:set", (_e, p: PopupPosition) => {
+    settings = { ...settings, popupPosition: p };
+    saveSettings(settingsFile(), settings);
+    notifications.setPosition(p);
   });
 
   ipcMain.handle("issue:open", async (_e, url: string) => {
