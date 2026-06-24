@@ -17,8 +17,6 @@ async function refreshAuth() {
 }
 
 async function init() {
-  const s = await settingsApi.load();
-  $("rules").value = JSON.stringify(s.rules, null, 2);
   await refreshAuth();
 }
 
@@ -31,21 +29,6 @@ $("login").addEventListener("click", async () => {
   } else {
     $("authStatus").textContent = "로그인 실패: " + (r.error ?? "");
   }
-});
-
-$("save").addEventListener("click", async () => {
-  $("error").textContent = "";
-  let rules;
-  try {
-    rules = JSON.parse($("rules").value || "[]");
-    if (!Array.isArray(rules)) throw new Error("규칙은 배열이어야 합니다");
-  } catch (e: any) {
-    $("error").textContent = "규칙 JSON 오류: " + e.message;
-    return;
-  }
-  const cur = await settingsApi.load();
-  await settingsApi.save({ ...cur, rules });
-  $("error").textContent = "저장됨 ✓";
 });
 
 $("test").addEventListener("click", () => settingsApi.test());
