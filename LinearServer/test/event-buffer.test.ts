@@ -5,24 +5,25 @@ import type { LinearWebhookEvent } from "../src/protocol";
 const ev = (id: string): LinearWebhookEvent => ({ action: "create", type: "Issue", data: { id } });
 
 describe("EventBuffer", () => {
-  it("윈도우 내 이벤트만 since 이후로 돌려준다", () => {
+  it("since(ts, userId): 대상이고 ts 이후인 것만 replay", () => {
     const buf = new EventBuffer(60_000);
-    buf.add(ev("a"), 1000);
-    buf.add(ev("b"), 2000);
-    const got = buf.since(1500);
-    expect(got.map((m) => (m.event.data as any).id)).toEqual(["b"]);
+    buf.add(ev("a"), 1000, ["u1"]);
+    buf.add(ev("b"), 2000, ["u2"]);
+    buf.add(ev("c"), 3000, ["u1", "u2"]);
+    const forU1 = buf.since(1500, "u1");
+    expect(forU1.map((m) => (m.event.data as any).id)).toEqual(["c"]);
   });
 
-  it("윈도우보다 오래된 이벤트는 add 시 제거된다", () => {
+  it("대상이 아니면 replay에서 제외", () => {
     const buf = new EventBuffer(60_000);
-    buf.add(ev("old"), 1000);
-    buf.add(ev("new"), 1000 + 61_000); // old는 윈도우 밖
-    expect(buf.since(0).map((m) => (m.event.data as any).id)).toEqual(["new"]);
+    buf.add(ev("a"), 1000, ["u2"]);
+    expect(buf.since(0, "u1")).toEqual([]);
   });
 
-  it("since가 모든 이벤트보다 미래면 빈 배열", () => {
+  it("윈도우 밖 메시지는 add 시 제거", () => {
     const buf = new EventBuffer(60_000);
-    buf.add(ev("a"), 1000);
-    expect(buf.since(5000)).toEqual([]);
+    buf.add(ev("old"), 1000, ["u1"]);
+    buf.add(ev("new"), 1000 + 61_000, ["u1"]);
+    expect(buf.since(0, "u1").map((m) => (m.event.data as any).id)).toEqual(["new"]);
   });
 });
