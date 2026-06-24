@@ -1,7 +1,7 @@
 {
   "name": "linear-noti-app",
   "productName": "Linear Noti",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "private": true,
   "main": "dist/main/main.js",
   "scripts": {
@@ -26,9 +26,19 @@
   "build": {
     "appId": "com.woogun.linearnoti",
     "productName": "Linear Noti",
-    "files": ["dist/**/*"],
-    "directories": { "output": "release" },
-    "mac": { "target": "dmg", "icon": "build/icon.icns" },
-    "win": { "target": "nsis", "icon": "build/icon.png" }
+    "files": [
+      "dist/**/*"
+    ],
+    "directories": {
+      "output": "release"
+    },
+    "mac": {
+      "target": "dmg",
+      "icon": "build/icon.icns"
+    },
+    "win": {
+      "target": "nsis",
+      "icon": "build/icon.png"
+    }
   }
 }
