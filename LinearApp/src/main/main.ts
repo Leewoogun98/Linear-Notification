@@ -103,7 +103,9 @@ app.whenReady().then(() => {
   client = new RelayClient(
     () => ({ relayUrl: settings.relayUrl, sessionToken: settings.sessionToken }),
     (msg) => {
+      console.log("[event] type=", msg.event.type, "action=", msg.event.action, "me=", settings.me.id);
       const cats = categorize(msg.event, settings.me);
+      console.log("[event] categories=", JSON.stringify(cats), "enabled=", JSON.stringify(settings.enabledCategories));
       if (!shouldNotify(cats, settings.enabledCategories)) return;
       const rep = representativeCategory(cats);
       if (!rep) return;
@@ -113,6 +115,7 @@ app.whenReady().then(() => {
       pushNotiUpdate();
     },
     (you) => {
+      console.log("[hello] connected as", you.id, you.name);
       settings = { ...settings, me: { id: you.id, name: you.name } };
       saveSettings(settingsFile(), settings);
       if (win && !win.isDestroyed()) win.webContents.send("auth:changed", { loggedIn: true, name: you.name });

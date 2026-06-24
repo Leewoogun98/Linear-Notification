@@ -51,6 +51,7 @@ export class RelayDurableObject {
       const [client, server] = [pair[0], pair[1]];
       this.ctx.acceptWebSocket(server);
       server.serializeAttachment({ userId: session.userId });
+      console.log("[connect] userId=", session.userId, "name=", session.name);
 
       const hello: HelloMessage = { kind: "hello", you: { id: session.userId, name: session.name } };
       server.send(JSON.stringify(hello));
@@ -66,6 +67,13 @@ export class RelayDurableObject {
     if (url.pathname === "/broadcast" && request.method === "POST") {
       const event = (await request.json()) as LinearWebhookEvent;
       const recipients = computeRecipients(event);
+      const connectedIds = this.ctx.getWebSockets().map((ws) => (ws.deserializeAttachment() as { userId: string } | null)?.userId);
+      console.log("[broadcast] type=", event.type, "action=", event.action,
+        "dataKeys=", JSON.stringify(Object.keys(event.data ?? {})),
+        "subscriberIds=", JSON.stringify((event.data as any)?.subscriberIds),
+        "assignee=", JSON.stringify((event.data as any)?.assignee?.id),
+        "recipients=", JSON.stringify(recipients),
+        "connected=", JSON.stringify(connectedIds));
       const now = Date.now();
       const msg = this.buffer.add(event, now, recipients);
       const payload = JSON.stringify(msg);
