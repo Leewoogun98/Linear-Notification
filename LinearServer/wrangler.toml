@@ -12,5 +12,6 @@ tag = "v1"
 new_sqlite_classes = ["RelayDurableObject"]
 
 # 시크릿은 `wrangler secret put` 으로 등록:
-#   LINEAR_WEBHOOK_SECRET  — Linear webhook 서명 검증용
-#   APP_AUTH_TOKEN         — 데스크탑 앱 WS 접속 토큰
+#   LINEAR_WEBHOOK_SECRET  — Linear webhook 서명 검증용 (Linear가 webhook 생성 시 발급)
+#   LINEAR_CLIENT_ID       — Linear OAuth 앱 client id
+#   LINEAR_CLIENT_SECRET   — Linear OAuth 앱 client secret
