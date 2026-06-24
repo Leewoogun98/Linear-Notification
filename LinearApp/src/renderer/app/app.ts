@@ -100,12 +100,18 @@ $("loginBtn").addEventListener("click", async () => {
 });
 $("gearBtn").addEventListener("click", () => { show("settings"); renderSettings(); });
 $("backBtn").addEventListener("click", () => { show("home"); renderHome(); });
-$("clearAll").addEventListener("click", async () => { await api.notifications.clearAll(); renderHome(); });
+$("clearAll").addEventListener("click", () => { api.notifications.clearAll(); });
 $("logoutBtn").addEventListener("click", async () => { await api.auth.logout(); show("login"); });
 $("testBtn").addEventListener("click", () => api.test());
 
 api.notifications.onUpdate(() => { if (!(views.home as HTMLElement).hidden) renderHome(); });
-api.auth.onChanged((s) => { if (s.loggedIn && (views.login as HTMLElement).hidden === false) { show("home"); renderHome(); } });
+api.auth.onChanged((s) => {
+  if (s.loggedIn) {
+    if ((views.login as HTMLElement).hidden === false) { show("home"); renderHome(); }
+  } else {
+    show("login");
+  }
+});
 
 (async function init() {
   const st = await api.auth.status();
