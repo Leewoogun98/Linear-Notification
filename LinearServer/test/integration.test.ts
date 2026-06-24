@@ -30,10 +30,11 @@ describe("relay integration", () => {
     ws.close();
   });
 
-  it("잘못된 토큰은 401", async () => {
-    // Node's undici fetch rejects the Upgrade header client-side, so we verify
-    // auth rejection via a WebSocket handshake: the server returns 401 and the
-    // WS connection fails (error event fires, open never fires).
+  it("잘못된 토큰은 거부된다 (서버 liveness 확인 후)", async () => {
+    // 서버가 실제로 떠 있는지 먼저 확인 — 그래야 아래 거부가 'auth 거부'임을 보장
+    const health = await fetch(`${BASE}/`);
+    expect(health.status).toBe(200);
+
     const rejected = await new Promise<boolean>((resolve) => {
       const ws = new WebSocket(`${WS}/connect?token=wrong`);
       ws.addEventListener("open", () => { ws.close(); resolve(false); });
