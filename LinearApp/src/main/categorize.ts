@@ -15,8 +15,9 @@ export function categorize(event: LinearWebhookEvent, me: Identity): Category[] 
   // 안 걸리면 빈 배열을 반환한다(예: 구독만 하고 담당/멘션 아닌 이슈 변경). 이는 설계상 의도된
   // 동작으로, 그런 이벤트는 알림하지 않는다.
   const text = [d.title, d.description, d.body].filter(Boolean).join(" ").toLowerCase();
+  const handle = (me.displayName || me.name || "").toLowerCase();
   const mentioned =
-    (me.name !== "" && text.includes(`@${me.name.toLowerCase()}`)) ||
+    (handle !== "" && text.includes(`@${handle}`)) ||
     (me.id !== "" && text.includes(me.id.toLowerCase()));
   if (mentioned) cats.push("mention");
   if (event.type === "Comment") cats.push("comment");

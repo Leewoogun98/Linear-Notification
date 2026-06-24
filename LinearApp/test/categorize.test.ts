@@ -3,7 +3,7 @@ import { categorize, representativeCategory, formatNotification, shouldNotify } 
 import type { Identity } from "../src/shared/types";
 import type { LinearWebhookEvent } from "../src/shared/protocol";
 
-const me: Identity = { id: "user_me", name: "wglee" };
+const me: Identity = { id: "user_me", name: "이우건", displayName: "wglee" };
 
 const issue = (over: Partial<LinearWebhookEvent> = {}): LinearWebhookEvent => ({
   action: "create", type: "Issue",

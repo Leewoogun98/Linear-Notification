@@ -79,7 +79,7 @@ app.whenReady().then(() => {
     }
   });
   ipcMain.handle("auth:logout", () => {
-    settings = { ...settings, sessionToken: "", me: { id: "", name: "" } };
+    settings = { ...settings, sessionToken: "", me: { id: "", name: "", displayName: "" } };
     saveSettings(settingsFile(), settings);
     client.stop();
   });
@@ -115,8 +115,8 @@ app.whenReady().then(() => {
       pushNotiUpdate();
     },
     (you) => {
-      console.log("[hello] connected as", you.id, you.name);
-      settings = { ...settings, me: { id: you.id, name: you.name } };
+      console.log("[hello] connected as", you.id, you.name, you.displayName);
+      settings = { ...settings, me: { id: you.id, name: you.name, displayName: you.displayName } };
       saveSettings(settingsFile(), settings);
       if (win && !win.isDestroyed()) win.webContents.send("auth:changed", { loggedIn: true, name: you.name });
     },

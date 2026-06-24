@@ -15,5 +15,5 @@ export interface RelayMessage {
 
 export interface HelloMessage {
   kind: "hello";
-  you: { id: string; name: string };
+  you: { id: string; name: string; displayName: string };
 }

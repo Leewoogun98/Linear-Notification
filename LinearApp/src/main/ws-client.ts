@@ -12,7 +12,7 @@ export class RelayClient {
   constructor(
     private getConfig: () => { relayUrl: string; sessionToken: string },
     private onMessage: (msg: RelayMessage) => void,
-    private onHello: (you: { id: string; name: string }) => void,
+    private onHello: (you: { id: string; name: string; displayName: string }) => void,
     private onUnauthorized: () => void,
   ) {}
 

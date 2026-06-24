@@ -4,6 +4,7 @@ export const ALL_CATEGORIES: Category[] = ["mention", "comment", "assigned", "pr
 export interface Identity {
   id: string;
   name: string;
+  displayName: string;
 }
 
 export interface Settings {
@@ -16,7 +17,7 @@ export interface Settings {
 export const DEFAULT_SETTINGS: Settings = {
   relayUrl: "wss://linear-noti-relay.bome00519.workers.dev",
   sessionToken: "",
-  me: { id: "", name: "" },
+  me: { id: "", name: "", displayName: "" },
   enabledCategories: ["mention", "comment", "assigned", "projectUpdate"],
 };
 
