@@ -1,4 +1,14 @@
-import type { StoredNotification, Category } from "../../shared/types";
+type Category = "mention" | "comment" | "assigned" | "projectUpdate";
+interface StoredNotification {
+  id: string;
+  category: Category;
+  title: string;
+  body: string;
+  issueUrl?: string;
+  identifier?: string;
+  receivedAt: number;
+  read: boolean;
+}
 
 declare const api: {
   auth: {
