@@ -8,6 +8,30 @@ export interface NotificationContent {
   identifier?: string;
 }
 
+// Project/ProjectUpdate 업데이트에서 "의미 있는" 변경 필드만 사람이 읽을 문구로.
+// updatedFrom 에 들어온 키 = 바뀐 필드. sortOrder/updatedAt 등 노이즈는 매핑에 없으므로 무시된다.
+const PROJECT_FIELD_LABELS: Record<string, (d: any) => string> = {
+  name: (d) => `이름: ${d.name ?? ""}`,
+  statusId: (d) => `상태: ${d.status?.name ?? "변경됨"}`,
+  health: (d) => `상태(health): ${d.health ?? "변경됨"}`,
+  targetDate: (d) => `마감일: ${d.targetDate ?? "없음"}`,
+  startDate: (d) => `시작일: ${d.startDate ?? "없음"}`,
+  priority: (d) => `우선순위: ${d.priorityLabel ?? d.priority ?? "변경됨"}`,
+  description: () => "설명 변경",
+  lastUpdateId: () => "새 프로젝트 업데이트 게시됨",
+};
+
+export function projectChanges(event: LinearWebhookEvent): string[] {
+  const uf = event.updatedFrom;
+  if (!uf) return [];
+  const d = event.data as any;
+  const out: string[] = [];
+  for (const key of Object.keys(PROJECT_FIELD_LABELS)) {
+    if (key in uf) out.push(PROJECT_FIELD_LABELS[key](d));
+  }
+  return out;
+}
+
 export function categorize(event: LinearWebhookEvent, me: Identity): Category[] {
   const d = event.data as any;
   const cats: Category[] = [];
@@ -20,7 +44,10 @@ export function categorize(event: LinearWebhookEvent, me: Identity): Category[] 
     (handle !== "" && text.includes(`@${handle}`)) ||
     (me.id !== "" && text.includes(me.id.toLowerCase()));
   if (mentioned) cats.push("mention");
-  if (event.type === "ProjectUpdate" || event.type === "Project") cats.push("projectUpdate");
+  if (event.type === "ProjectUpdate" || event.type === "Project") {
+    // 생성은 항상 알림, 업데이트는 의미 있는 변경이 있을 때만 (정렬/타임스탬프만 바뀐 건 무시)
+    if (event.action !== "update" || projectChanges(event).length > 0) cats.push("projectUpdate");
+  }
   return cats;
 }
 
@@ -47,6 +74,15 @@ export function formatNotification(event: LinearWebhookEvent): NotificationConte
       body: String(d.body ?? ""),
       issueUrl,
       identifier: d.issue?.identifier,
+    };
+  }
+  if (event.type === "Project" || event.type === "ProjectUpdate") {
+    const changes = projectChanges(event);
+    const verb = event.action === "create" ? "생성됨" : "업데이트";
+    return {
+      title: `프로젝트 "${d.name ?? ""}" ${verb}`.trim(),
+      body: changes.length ? changes.join("\n") : (event.action === "create" ? String(d.description ?? "") : "업데이트됨"),
+      issueUrl,
     };
   }
   const ident = d.identifier ?? d.issue?.identifier;

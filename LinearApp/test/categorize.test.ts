@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { categorize, representativeCategory, formatNotification, shouldNotify } from "../src/main/categorize";
+import { categorize, representativeCategory, formatNotification, shouldNotify, projectChanges } from "../src/main/categorize";
 import type { Identity } from "../src/shared/types";
 import type { LinearWebhookEvent } from "../src/shared/protocol";
 
@@ -69,5 +69,33 @@ describe("formatNotification", () => {
       actor: { id: "ux", name: "Alice" },
     };
     expect(formatNotification(e).issueUrl).toBe("https://linear.app/top/ENG-9");
+  });
+});
+
+const projectEvent = (over: Partial<LinearWebhookEvent> = {}): LinearWebhookEvent => ({
+  action: "update", type: "Project",
+  data: { name: "New Project", url: "https://linear.app/x/project/p", status: { name: "완료" } },
+  updatedFrom: { statusId: "old", updatedAt: "t" },
+  ...over,
+});
+
+describe("project changes", () => {
+  it("상태 변경 → projectUpdate 카테고리", () => {
+    expect(categorize(projectEvent(), me)).toContain("projectUpdate");
+  });
+  it("상태 변경 → 본문에 '상태: 완료'", () => {
+    expect(formatNotification(projectEvent()).body).toContain("상태: 완료");
+  });
+  it("정렬/타임스탬프만 바뀐 업데이트는 projectUpdate 아님(노이즈 억제)", () => {
+    const e = projectEvent({ updatedFrom: { sortOrder: 1, updatedAt: "t" } });
+    expect(categorize(e, me)).not.toContain("projectUpdate");
+  });
+  it("프로젝트 생성은 updatedFrom 없어도 항상 projectUpdate", () => {
+    const e = projectEvent({ action: "create", updatedFrom: undefined });
+    expect(categorize(e, me)).toContain("projectUpdate");
+  });
+  it("새 업데이트 게시(lastUpdateId 변경) → 안내 문구", () => {
+    const e = projectEvent({ updatedFrom: { lastUpdateId: "x", healthUpdatedAt: "t" } });
+    expect(formatNotification(e).body).toContain("새 프로젝트 업데이트 게시됨");
   });
 });

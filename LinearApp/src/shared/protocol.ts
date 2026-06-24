@@ -5,6 +5,7 @@ export interface LinearWebhookEvent {
   url?: string;
   actor?: { id: string; name: string };
   createdAt?: string;
+  updatedFrom?: Record<string, any>;
 }
 
 export interface RelayMessage {
