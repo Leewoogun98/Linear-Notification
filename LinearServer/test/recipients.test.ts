@@ -20,6 +20,10 @@ describe("computeRecipients", () => {
     const c = ev({ body: "@someone 코멘트" }, "Comment");
     expect(computeRecipients(c, [{ userId: "u_me", displayName: "wglee" }])).toEqual([]);
   });
+  it("프로젝트 memberIds 포함 (연결 무관)", () => {
+    const p = ev({ name: "New Project", memberIds: ["u_me", "u_other"] }, "Project");
+    expect(computeRecipients(p, []).sort()).toEqual(["u_me", "u_other"]);
+  });
   it("관련 정보 없으면 빈 배열", () => {
     expect(computeRecipients(ev({ title: "x" }), [])).toEqual([]);
   });
