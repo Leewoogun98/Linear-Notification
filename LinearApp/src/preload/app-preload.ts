@@ -19,6 +19,8 @@ contextBridge.exposeInMainWorld("api", {
   settings: {
     getCategories: (): Promise<Category[]> => ipcRenderer.invoke("cat:get"),
     setCategories: (c: Category[]): Promise<void> => ipcRenderer.invoke("cat:set", c),
+    getMuteOwn: (): Promise<boolean> => ipcRenderer.invoke("mute:get"),
+    setMuteOwn: (v: boolean): Promise<void> => ipcRenderer.invoke("mute:set", v),
   },
   openIssue: (url: string): Promise<void> => ipcRenderer.invoke("issue:open", url),
   test: (): Promise<void> => ipcRenderer.invoke("settings:test"),

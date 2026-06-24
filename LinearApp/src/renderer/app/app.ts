@@ -24,7 +24,7 @@ declare const api: {
     clearAll: () => Promise<void>;
     onUpdate: (cb: () => void) => void;
   };
-  settings: { getCategories: () => Promise<Category[]>; setCategories: (c: Category[]) => Promise<void> };
+  settings: { getCategories: () => Promise<Category[]>; setCategories: (c: Category[]) => Promise<void>; getMuteOwn: () => Promise<boolean>; setMuteOwn: (v: boolean) => Promise<void> };
   openIssue: (url: string) => Promise<void>;
   test: () => Promise<void>;
 };
@@ -98,6 +98,12 @@ async function renderSettings() {
     });
     cats.appendChild(row);
   }
+
+  const mute = await api.settings.getMuteOwn();
+  const muteRow = $("muteRow");
+  muteRow.className = "cat " + (mute ? "on" : "off");
+  (muteRow.querySelector(".chk") as HTMLElement).textContent = mute ? "✓" : "";
+  muteRow.onclick = async () => { await api.settings.setMuteOwn(!mute); renderSettings(); };
 }
 
 $("loginBtn").addEventListener("click", async () => {

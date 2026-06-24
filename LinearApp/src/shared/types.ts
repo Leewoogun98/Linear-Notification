@@ -12,6 +12,7 @@ export interface Settings {
   sessionToken: string;
   me: Identity;
   enabledCategories: Category[];
+  muteOwnChanges: boolean;
 }
 
 export const DEFAULT_SETTINGS: Settings = {
@@ -19,6 +20,7 @@ export const DEFAULT_SETTINGS: Settings = {
   sessionToken: "",
   me: { id: "", name: "", displayName: "" },
   enabledCategories: ["mention", "projectUpdate"],
+  muteOwnChanges: true,
 };
 
 export interface StoredNotification {
