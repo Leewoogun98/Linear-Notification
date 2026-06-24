@@ -42,7 +42,9 @@ app.whenReady().then(() => {
 
   ipcMain.handle("settings:load", () => settings);
   ipcMain.handle("settings:save", (_e, s: Settings) => {
-    settings = s; saveSettings(settingsFile(), s);
+    // 렌더러 스냅샷이 hello 이전일 수 있으므로 라이브 신원(me)은 보존
+    settings = { ...s, me: settings.me };
+    saveSettings(settingsFile(), settings);
     client.stop(); client.start();
   });
   ipcMain.handle("settings:test", () => {

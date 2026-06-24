@@ -25,7 +25,12 @@ async function init() {
 $("login").addEventListener("click", async () => {
   $("authStatus").textContent = "브라우저에서 로그인 진행 중…";
   const r = await settingsApi.login();
-  $("authStatus").textContent = r.ok ? `로그인됨: ${r.name}` : "로그인 실패: " + (r.error ?? "");
+  if (r.ok) {
+    $("authStatus").textContent = "로그인됨 (이름 불러오는 중…)";
+    setTimeout(refreshAuth, 3000); // hello가 도착해 me가 채워지면 실제 이름 표시
+  } else {
+    $("authStatus").textContent = "로그인 실패: " + (r.error ?? "");
+  }
 });
 
 $("save").addEventListener("click", async () => {
