@@ -72,19 +72,13 @@ app.whenReady().then(() => {
 
   ipcMain.handle("auth:status", () => ({ loggedIn: !!settings.sessionToken, name: settings.me.name }));
   ipcMain.handle("auth:login", async () => {
-    console.log("[auth:login] relayUrl =", JSON.stringify(settings.relayUrl));
     try {
-      const token = await login(settings.relayUrl, async (url) => {
-        console.log("[auth:login] opening browser:", url);
-        await shell.openExternal(url);
-        console.log("[auth:login] shell.openExternal resolved");
-      });
+      const token = await login(settings.relayUrl, (url) => shell.openExternal(url));
       settings = { ...settings, sessionToken: token };
       saveSettings(settingsFile(), settings);
       client.stop(); client.start();
       return { ok: true, name: settings.me.name };
     } catch (e) {
-      console.error("[auth:login] FAILED:", e);
       return { ok: false, error: (e as Error).message };
     }
   });
@@ -113,16 +107,9 @@ app.whenReady().then(() => {
 
   ipcMain.handle("issue:open", async (_e, url: string) => {
     if (!url || typeof url !== "string") return;
-    // Linear 데스크탑 앱이 설치돼 있으면 linear:// 딥링크로 앱에서 열고, 없으면(또는 실패하면) 브라우저로 폴백.
     if (url.startsWith("https://linear.app/")) {
       const deep = url.replace("https://linear.app/", "linear://");
-      console.log("[issue:open] try app:", deep);
-      try {
-        await shell.openExternal(deep);
-        return;
-      } catch (e) {
-        console.log("[issue:open] app open failed, fallback to browser:", (e as Error).message);
-      }
+      try { await shell.openExternal(deep); return; } catch { /* 앱 없음 → 브라우저 폴백 */ }
     }
     await shell.openExternal(url);
   });
@@ -134,12 +121,9 @@ app.whenReady().then(() => {
     () => ({ relayUrl: settings.relayUrl, sessionToken: settings.sessionToken }),
     (msg) => {
       if (settings.muteOwnChanges && msg.event.actor?.id && msg.event.actor.id === settings.me.id) {
-        console.log("[event] skipped own change by", msg.event.actor.id);
         return;
       }
-      console.log("[event] type=", msg.event.type, "action=", msg.event.action, "me=", settings.me.id);
       const cats = categorize(msg.event, settings.me);
-      console.log("[event] categories=", JSON.stringify(cats), "enabled=", JSON.stringify(settings.enabledCategories));
       if (!shouldNotify(cats, settings.enabledCategories)) return;
       const rep = representativeCategory(cats);
       if (!rep) return;
@@ -149,7 +133,6 @@ app.whenReady().then(() => {
       pushNotiUpdate();
     },
     (you) => {
-      console.log("[hello] connected as", you.id, you.name, you.displayName);
       settings = { ...settings, me: { id: you.id, name: you.name, displayName: you.displayName } };
       saveSettings(settingsFile(), settings);
       if (win && !win.isDestroyed()) win.webContents.send("auth:changed", { loggedIn: true, name: you.name });

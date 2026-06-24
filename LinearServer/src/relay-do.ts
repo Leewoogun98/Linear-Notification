@@ -52,7 +52,6 @@ export class RelayDurableObject {
       const [client, server] = [pair[0], pair[1]];
       this.ctx.acceptWebSocket(server);
       server.serializeAttachment({ userId: session.userId, displayName: session.displayName });
-      console.log("[connect] userId=", session.userId, "name=", session.name);
 
       const hello: HelloMessage = { kind: "hello", you: { id: session.userId, name: session.name, displayName: session.displayName } };
       server.send(JSON.stringify(hello));
@@ -73,25 +72,6 @@ export class RelayDurableObject {
         .map((ws) => ws.deserializeAttachment() as { userId: string; displayName: string } | null)
         .filter((a): a is { userId: string; displayName: string } => !!a);
       const recipients = computeRecipients(event, connected);
-      const connectedIds = connected.map((a) => a.userId);
-      console.log("[broadcast] type=", event.type, "action=", event.action,
-        "dataKeys=", JSON.stringify(Object.keys(event.data ?? {})),
-        "subscriberIds=", JSON.stringify((event.data as any)?.subscriberIds),
-        "assignee=", JSON.stringify((event.data as any)?.assignee?.id),
-        "recipients=", JSON.stringify(recipients),
-        "connected=", JSON.stringify(connectedIds));
-      console.log("[broadcast-detail] body=", JSON.stringify((event.data as any)?.body),
-        "issueKeys=", JSON.stringify(Object.keys((event.data as any)?.issue ?? {})),
-        "issue.subscriberIds=", JSON.stringify((event.data as any)?.issue?.subscriberIds),
-        "userId=", JSON.stringify((event.data as any)?.userId),
-        "user=", JSON.stringify((event.data as any)?.user));
-      console.log("[broadcast-updatedFrom] updatedFrom=", JSON.stringify((event as any)?.updatedFrom));
-      console.log("[broadcast-project] leadId=", JSON.stringify((event.data as any)?.leadId),
-        "lead=", JSON.stringify((event.data as any)?.lead),
-        "leadUserId=", JSON.stringify((event.data as any)?.leadUserId),
-        "creatorId=", JSON.stringify((event.data as any)?.creatorId),
-        "memberIds=", JSON.stringify((event.data as any)?.memberIds));
-      console.log("[broadcast-actor] actor=", JSON.stringify((event as any)?.actor));
       const msg = this.buffer.add(event, now, recipients);
       const payload = JSON.stringify(msg);
       const targets = new Set(recipients);

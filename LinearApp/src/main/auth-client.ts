@@ -23,17 +23,11 @@ export async function login(
     await delay(interval);
     try {
       const res = await fetch(`${base}/auth/poll?cb=${encodeURIComponent(cb)}`);
-      const text = await res.text();
-      console.log(`[poll ${i}] GET ${base}/auth/poll?cb=${cb} -> ${res.status} body=${text}`);
       if (res.ok) {
-        let j: { token?: string } = {};
-        try { j = JSON.parse(text); } catch (e) { console.log("[poll] JSON parse error", e); }
-        if (j.token) { console.log("[poll] GOT TOKEN, resolving login"); return j.token; }
+        const j = (await res.json()) as { token?: string };
+        if (j.token) return j.token;
       }
-    } catch (e) {
-      console.log(`[poll ${i}] fetch error:`, (e as Error).message);
-    }
+    } catch { /* 네트워크 일시 오류 무시, 계속 폴링 */ }
   }
-  console.log("[poll] timed out after", tries, "tries");
   throw new Error("로그인 시간 초과");
 }
