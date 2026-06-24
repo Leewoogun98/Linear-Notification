@@ -6,7 +6,7 @@ import { computeSignature } from "../src/signature";
 const BASE = "http://localhost:8787";
 const WS = "ws://localhost:8787";
 
-describe("relay integration", () => {
+describe.skipIf(!process.env.RELAY_LIVE)("relay integration", () => {
   it("서명된 webhook이 WS 클라이언트로 전달된다", async () => {
     const ws = new WebSocket(`${WS}/connect?token=test-token`);
     const received = new Promise<any>((resolve, reject) => {
