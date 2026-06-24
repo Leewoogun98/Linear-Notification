@@ -1,42 +1,79 @@
 import { EventBuffer } from "./event-buffer";
-import type { LinearWebhookEvent } from "./protocol";
+import { computeRecipients } from "./recipients";
+import type { LinearWebhookEvent, HelloMessage } from "./protocol";
 
 const WINDOW_MS = 60_000;
+const PAIR_TTL_MS = 5 * 60_000;
+
+interface Session {
+  userId: string;
+  name: string;
+}
 
 export class RelayDurableObject {
   private buffer = new EventBuffer(WINDOW_MS);
-
   constructor(private ctx: DurableObjectState, private env: unknown) {}
 
   async fetch(request: Request): Promise<Response> {
     const url = new URL(request.url);
 
-    // 데스크탑 앱의 WS 업그레이드 (worker가 토큰 검증 후 라우팅)
+    // 세션 저장 (worker의 /auth/callback에서 호출)
+    if (url.pathname === "/session/put" && request.method === "POST") {
+      const { token, session, pairing } = (await request.json()) as {
+        token: string; session: Session; pairing: string;
+      };
+      await this.ctx.storage.put(`session:${token}`, session);
+      await this.ctx.storage.put(`pair:${pairing}`, { token, at: Date.now() });
+      return new Response("ok");
+    }
+
+    // 페어링 코드 소비 (worker의 /auth/poll에서 호출)
+    if (url.pathname === "/session/poll") {
+      const pairing = url.searchParams.get("cb") ?? "";
+      const rec = (await this.ctx.storage.get(`pair:${pairing}`)) as
+        | { token: string; at: number } | undefined;
+      if (!rec || Date.now() - rec.at > PAIR_TTL_MS) {
+        return new Response(JSON.stringify({}), { headers: { "content-type": "application/json" } });
+      }
+      await this.ctx.storage.delete(`pair:${pairing}`); // 1회용
+      return new Response(JSON.stringify({ token: rec.token }), {
+        headers: { "content-type": "application/json" },
+      });
+    }
+
+    // 앱 WS 연결 (worker가 forward; token 쿼리로 세션 검증)
     if (url.pathname === "/connect") {
+      const token = url.searchParams.get("token") ?? "";
+      const session = (await this.ctx.storage.get(`session:${token}`)) as Session | undefined;
+      if (!session) return new Response("unauthorized", { status: 401 });
+
       const pair = new WebSocketPair();
       const [client, server] = [pair[0], pair[1]];
       this.ctx.acceptWebSocket(server);
+      server.serializeAttachment({ userId: session.userId });
+
+      const hello: HelloMessage = { kind: "hello", you: { id: session.userId, name: session.name } };
+      server.send(JSON.stringify(hello));
 
       const since = Number(url.searchParams.get("since") ?? "0");
       if (since > 0) {
-        for (const msg of this.buffer.since(since)) {
-          server.send(JSON.stringify(msg));
-        }
+        for (const msg of this.buffer.since(since, session.userId)) server.send(JSON.stringify(msg));
       }
       return new Response(null, { status: 101, webSocket: client });
     }
 
-    // worker가 검증한 webhook 이벤트를 내부 전달 (POST JSON: LinearWebhookEvent)
+    // 검증된 webhook 이벤트 (worker가 forward)
     if (url.pathname === "/broadcast" && request.method === "POST") {
       const event = (await request.json()) as LinearWebhookEvent;
+      const recipients = computeRecipients(event);
       const now = Date.now();
-      const msg = this.buffer.add(event, now);
+      const msg = this.buffer.add(event, now, recipients);
       const payload = JSON.stringify(msg);
+      const targets = new Set(recipients);
       for (const ws of this.ctx.getWebSockets()) {
-        try {
-          ws.send(payload);
-        } catch {
-          /* 닫힌 소켓 무시 */
+        const att = ws.deserializeAttachment() as { userId: string } | null;
+        if (att && targets.has(att.userId)) {
+          try { ws.send(payload); } catch { /* 닫힌 소켓 무시 */ }
         }
       }
       return new Response("ok");
@@ -45,14 +82,8 @@ export class RelayDurableObject {
     return new Response("not found", { status: 404 });
   }
 
-  // hibernation 콜백: 앱→relay 메시지는 사용하지 않지만 핸들러는 있어야 한다.
   async webSocketMessage(_ws: WebSocket, _msg: string | ArrayBuffer) {}
-
   async webSocketClose(ws: WebSocket) {
-    try {
-      ws.close();
-    } catch {
-      /* 무시 */
-    }
+    try { ws.close(); } catch { /* 무시 */ }
   }
 }
