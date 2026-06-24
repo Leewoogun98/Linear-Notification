@@ -19,7 +19,7 @@ describe("config-store", () => {
   });
 
   it("저장한 값을 다시 읽으면 동일", () => {
-    const s = { ...DEFAULT_SETTINGS, relayUrl: "wss://x", me: { id: "u1", name: "woogun" } };
+    const s = { ...DEFAULT_SETTINGS, sessionToken: "sess123", me: { id: "u1", name: "woogun" } };
     saveSettings(file, s);
     expect(loadSettings(file)).toEqual(s);
   });
