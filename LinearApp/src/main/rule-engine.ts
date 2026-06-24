@@ -67,6 +67,10 @@ function buildText(event: LinearWebhookEvent): NotificationText {
 }
 
 export function evaluateEvent(event: LinearWebhookEvent, rules: Rule[], me: Identity): EvalResult {
+  // 서버가 이미 "내 것만" 보내므로, 규칙이 없으면 받은 것 전부 알림.
+  if (rules.length === 0) {
+    return { matched: true, text: buildText(event) };
+  }
   for (const rule of rules) {
     if (!rule.enabled) continue;
     if (rule.eventTypes.length > 0 && !rule.eventTypes.includes(event.type)) continue;

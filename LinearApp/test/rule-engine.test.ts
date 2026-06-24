@@ -125,8 +125,10 @@ describe("evaluateEvent", () => {
     expect(evaluateEvent(comment, [r], me).matched).toBe(false);
   });
 
-  it("빈 규칙 배열이면 매칭 안 됨", () => {
-    expect(evaluateEvent(issue(), [], me).matched).toBe(false);
+  it("규칙이 비면 전부 매칭(받은 내 알림 모두 표시)", () => {
+    const res = evaluateEvent(issue(), [], me);
+    expect(res.matched).toBe(true);
+    expect(res.text?.body).toContain("Fix login");
   });
 
   it("여러 규칙 중 첫 매칭 규칙이 반환된다", () => {
