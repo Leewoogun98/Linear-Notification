@@ -105,12 +105,21 @@ async function renderSettings() {
   (muteRow.querySelector(".chk") as HTMLElement).textContent = mute ? "✓" : "";
   muteRow.onclick = async () => { await api.settings.setMuteOwn(!mute); renderSettings(); };
 
-  const posSel = $("posSelect") as HTMLSelectElement;
-  posSel.value = await api.settings.getPosition();
-  posSel.onchange = async () => {
-    await api.settings.setPosition(posSel.value);
-    await api.test(); // 새 위치에 샘플 팝업을 띄워 바로 확인
+  const LABELS: Record<string, string> = {
+    "center": "정중앙", "top-right": "우측 상단", "top-left": "좌측 상단",
+    "bottom-right": "우측 하단", "bottom-left": "좌측 하단",
   };
+  const curPos = await api.settings.getPosition();
+  ($("posLabel") as HTMLElement).textContent = LABELS[curPos] ?? curPos;
+  $("posPicker").querySelectorAll<HTMLElement>(".slot").forEach((el) => {
+    const p = el.dataset.pos as string;
+    el.classList.toggle("on", p === curPos);
+    el.onclick = async () => {
+      await api.settings.setPosition(p);
+      await api.test();
+      renderSettings();
+    };
+  });
 }
 
 $("loginBtn").addEventListener("click", async () => {
