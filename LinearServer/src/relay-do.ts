@@ -85,6 +85,7 @@ export class RelayDurableObject {
         "issue.subscriberIds=", JSON.stringify((event.data as any)?.issue?.subscriberIds),
         "userId=", JSON.stringify((event.data as any)?.userId),
         "user=", JSON.stringify((event.data as any)?.user));
+      console.log("[broadcast-updatedFrom] updatedFrom=", JSON.stringify((event as any)?.updatedFrom));
       const msg = this.buffer.add(event, now, recipients);
       const payload = JSON.stringify(msg);
       const targets = new Set(recipients);
