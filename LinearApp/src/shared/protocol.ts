@@ -12,3 +12,8 @@ export interface RelayMessage {
   receivedAt: number;
   event: LinearWebhookEvent;
 }
+
+export interface HelloMessage {
+  kind: "hello";
+  you: { id: string; name: string };
+}

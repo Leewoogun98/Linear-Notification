@@ -20,15 +20,15 @@ export interface Identity {
 }
 
 export interface Settings {
-  relayUrl: string;   // 예: wss://linear-noti-relay.<account>.workers.dev
-  authToken: string;
-  me: Identity;
+  relayUrl: string;     // wss://... (기본값 내장)
+  sessionToken: string; // Linear 로그인으로 발급된 세션 (수동 authToken 대체)
+  me: Identity;         // 로그인(hello)에서 채워짐
   rules: Rule[];
 }
 
 export const DEFAULT_SETTINGS: Settings = {
-  relayUrl: "",
-  authToken: "",
+  relayUrl: "wss://linear-noti-relay.bome00519.workers.dev",
+  sessionToken: "",
   me: { id: "", name: "" },
   rules: [],
 };
