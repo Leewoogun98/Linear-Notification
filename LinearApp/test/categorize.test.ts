@@ -48,6 +48,9 @@ describe("representativeCategory", () => {
     expect(representativeCategory(["comment", "assigned"])).toBe("assigned");
     expect(representativeCategory([])).toBe(null);
   });
+  it("mention이 assigned보다 우선", () => {
+    expect(representativeCategory(["assigned", "mention"])).toBe("mention");
+  });
 });
 
 describe("shouldNotify", () => {
@@ -73,5 +76,13 @@ describe("formatNotification", () => {
     const r = formatNotification(c);
     expect(r.title).toContain("Bob");
     expect(r.body).toContain("looks good");
+  });
+  it("이슈: top-level event.url을 우선 사용", () => {
+    const e: LinearWebhookEvent = {
+      action: "create", type: "Issue", url: "https://linear.app/top/ENG-9",
+      data: { identifier: "ENG-9", title: "x", assignee: { id: "user_me" } },
+      actor: { id: "ux", name: "Alice" },
+    };
+    expect(formatNotification(e).issueUrl).toBe("https://linear.app/top/ENG-9");
   });
 });
