@@ -5,7 +5,7 @@
   "main": "dist/main/main.js",
   "scripts": {
     "build": "tsc && npm run copy-assets",
-    "copy-assets": "node -e \"const fs=require('fs');const p='src/renderer/notification';fs.mkdirSync('dist/renderer/notification',{recursive:true});for(const f of ['index.html','notification.css'])fs.copyFileSync(p+'/'+f,'dist/renderer/notification/'+f);\"",
+    "copy-assets": "node -e \"const fs=require('fs');for(const d of ['notification','settings']){const p='src/renderer/'+d;fs.mkdirSync('dist/renderer/'+d,{recursive:true});for(const f of fs.readdirSync(p)){if(f.endsWith('.html')||f.endsWith('.css'))fs.copyFileSync(p+'/'+f,'dist/renderer/'+d+'/'+f);}}\"",
     "start": "npm run build && electron .",
     "test": "vitest run",
     "dist": "npm run build && electron-builder"

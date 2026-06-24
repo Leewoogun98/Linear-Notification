@@ -1,0 +1,25 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <link rel="stylesheet" href="settings.css" />
+  </head>
+  <body>
+    <h2>연결</h2>
+    <label>Relay URL <input id="relayUrl" placeholder="wss://...workers.dev" /></label>
+    <label>Auth Token <input id="authToken" /></label>
+    <label>내 Linear User ID <input id="meId" /></label>
+    <label>내 멘션 핸들(이름) <input id="meName" /></label>
+
+    <h2>규칙</h2>
+    <p class="hint">규칙은 JSON 배열로 편집합니다. 각 규칙: { name, enabled, eventTypes[], actions[], filters[] }</p>
+    <textarea id="rules" rows="14" spellcheck="false"></textarea>
+    <div id="error" class="error"></div>
+
+    <div class="row">
+      <button id="save">저장</button>
+      <button id="test">테스트 알림</button>
+    </div>
+    <script src="settings.js"></script>
+  </body>
+</html>
