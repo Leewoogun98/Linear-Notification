@@ -97,7 +97,8 @@ app.whenReady().then(() => {
     (msg) => {
       const cats = categorize(msg.event, settings.me);
       if (!shouldNotify(cats, settings.enabledCategories)) return;
-      const rep = representativeCategory(cats)!;
+      const rep = representativeCategory(cats);
+      if (!rep) return;
       const c = formatNotification(msg.event);
       store.add({ category: rep, title: c.title, body: c.body, issueUrl: c.issueUrl, identifier: c.identifier, receivedAt: msg.receivedAt });
       notifications.show({ title: c.title, body: c.body, accent: ACCENT[rep] });
