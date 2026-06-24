@@ -70,15 +70,19 @@ cd LinearServer
 npm install
 ```
 
-시크릿 두 가지를 Cloudflare에 등록한다.
+먼저 Cloudflare에 로그인한다(브라우저에서 직접 승인 필요).
 
 ```bash
-# Linear webhook 서명 검증용 — Linear 대시보드에서 webhook 생성 시 입력할 값과 동일하게 설정
-npx wrangler secret put LINEAR_WEBHOOK_SECRET
+npx wrangler login
+```
 
-# 데스크탑 앱이 WS 접속 시 사용하는 인증 토큰 — 강력한 랜덤 문자열 생성해 입력
+**앱 인증 토큰**(`APP_AUTH_TOKEN`)을 등록한다. 이 값은 **Linear와 무관하게 우리가 정하는** 임의의 강한 문자열이다(예: `openssl rand -hex 24`로 생성). 데스크탑 앱 설정창의 Auth Token에도 **같은 값**을 넣게 된다.
+
+```bash
 npx wrangler secret put APP_AUTH_TOKEN
 ```
+
+> ⚠️ `LINEAR_WEBHOOK_SECRET`은 여기서 정하는 값이 **아니다**. 이건 **Linear가 webhook을 만들 때 발급하는 Signing secret**이다. 그래서 등록 순서가 **배포(4-2) → Linear webhook 생성(5) → 서명 시크릿 등록(6)** 이 된다. 5단계에서 Linear가 보여주는 secret을 복사해 6단계에서 `npx wrangler secret put LINEAR_WEBHOOK_SECRET`로 등록한다(시크릿은 재배포 없이 즉시 반영됨).
 
 ### 4-2. 배포
 
@@ -107,9 +111,7 @@ https://linear-noti-relay.<account>.workers.dev
 npm test
 ```
 
-**통합 테스트** (실제 Worker + WS 흐름):
-
-별도 터미널에서 로컬 dev 서버를 먼저 실행한다.
+**통합 테스트** (실제 Worker + WS 흐름): 기본 `npm test`에서는 자동으로 **건너뛴다**(라이브 서버 필요). 명시적으로 돌리려면 별도 터미널에서 로컬 dev 서버를 먼저 실행한다.
 
 ```bash
 npx wrangler dev --local --port 8787 \
@@ -117,10 +119,10 @@ npx wrangler dev --local --port 8787 \
   --var APP_AUTH_TOKEN:test-token
 ```
 
-그 다음 테스트를 실행한다.
+그 다음 통합 테스트를 실행한다(`RELAY_LIVE` 플래그로 게이팅됨).
 
 ```bash
-npm test
+npm run test:integration
 ```
 
 > 통합 테스트(`test/integration.test.ts`)는 전역 `WebSocket`을 사용하므로 **Node 22 이상**이 필요하다.
@@ -130,14 +132,22 @@ npm test
 ## 5. Linear Webhook 등록
 
 1. Linear → **Settings** → **API** → **Webhooks** → **New webhook** 클릭
-2. **URL**: `https://linear-noti-relay.<account>.workers.dev/webhook`
-3. **Secret**: `LINEAR_WEBHOOK_SECRET`에 등록한 값과 **동일하게** 입력
-4. 구독할 이벤트 선택: Issues, Comments, Projects 등 원하는 항목 체크
-5. 저장
+2. **URL**: `https://linear-noti-relay.<account>.workers.dev/webhook` (4-2에서 배포해 얻은 주소 + `/webhook`)
+3. 구독할 이벤트 선택: Issues, Comments, Projects 등 원하는 항목 체크
+4. 저장하면 Linear가 **Signing secret**을 생성해 보여준다 → **이 값을 복사**한다.
+
+## 6. 서명 시크릿 등록 (LINEAR_WEBHOOK_SECRET)
+
+5단계에서 복사한 Linear의 Signing secret을 Cloudflare에 등록한다(재배포 불필요, 즉시 반영).
+
+```bash
+cd LinearServer
+npx wrangler secret put LINEAR_WEBHOOK_SECRET   # 붙여넣기: Linear가 보여준 Signing secret
+```
 
 ---
 
-## 6. 데스크탑 앱 (LinearApp)
+## 7. 데스크탑 앱 (LinearApp)
 
 ### 6-1. 설치 및 실행
 
@@ -163,7 +173,7 @@ npm start        # TypeScript 컴파일 → 렌더러 에셋 복사 → Electron
 
 ---
 
-## 7. 규칙(Rule) 작성법
+## 8. 규칙(Rule) 작성법
 
 규칙은 설정 창의 규칙 JSON 필드에 **배열 형태**로 입력한다.
 
@@ -259,7 +269,7 @@ interface FilterCondition {
 
 ---
 
-## 8. 패키징 (배포용 인스톨러 빌드)
+## 9. 패키징 (배포용 인스톨러 빌드)
 
 ```bash
 cd LinearApp
@@ -277,7 +287,7 @@ electron-builder가 실행되며 플랫폼별 인스톨러를 생성한다.
 
 ---
 
-## 9. 참고 및 제약
+## 10. 참고 및 제약
 
 - **단일 사용자 MVP**: 멀티유저·멀티워크스페이스는 지원하지 않는다.
 - **오프라인 중 이벤트 유실**: 앱이 완전히 꺼져 있을 때 발생한 이벤트는 복구되지 않는다. Durable Object의 버퍼는 **약 60초** 이내의 짧은 끊김만 커버한다.
