@@ -1,10 +1,10 @@
 html, body { margin: 0; background: transparent; overflow: hidden; font-family: -apple-system, "Segoe UI", sans-serif; }
 #card {
-  margin: 8px; padding: 16px 20px; border-radius: 14px;
-  background: rgba(28, 28, 32, 0.97); color: #fff; cursor: pointer;
+  margin: 8px; padding: 16px 18px; border-radius: 18px;
+  background: #2a2d3d; color: #eceefb; cursor: pointer;
+  border: 1px solid #3a3d52; border-left: 4px solid var(--accent, #8b7bf0);
   box-shadow: 0 10px 30px rgba(0,0,0,0.45);
-  border: 1px solid rgba(255,255,255,0.08);
 }
 #title { font-size: 14px; font-weight: 700; margin-bottom: 6px; }
 #body { font-size: 13px; line-height: 1.4; white-space: pre-wrap; word-break: break-word;
-  max-height: 160px; overflow: hidden; opacity: 0.9; }
+  max-height: 160px; overflow: hidden; color: #b6b9d0; }

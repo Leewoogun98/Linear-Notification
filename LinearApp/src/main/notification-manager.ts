@@ -1,6 +1,11 @@
 import { BrowserWindow, screen, shell } from "electron";
 import { join } from "node:path";
-import type { NotificationText } from "./rule-engine";
+
+export interface PopupContent {
+  title: string;
+  body: string;
+  accent?: string;
+}
 
 const WIDTH = 380;
 const HEIGHT = 120;
@@ -10,7 +15,7 @@ const AUTO_MS = 5000;
 export class NotificationManager {
   private windows: BrowserWindow[] = [];
 
-  show(text: NotificationText) {
+  show(text: PopupContent) {
     const win = new BrowserWindow({
       width: WIDTH,
       height: HEIGHT,
