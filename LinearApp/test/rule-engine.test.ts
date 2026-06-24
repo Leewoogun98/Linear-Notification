@@ -97,4 +97,43 @@ describe("evaluateEvent", () => {
     expect(res.text?.title).toContain("Alice");
     expect(res.text?.body).toContain("looks good");
   });
+
+  it("빈 value의 team 필터는 매칭하지 않는다", () => {
+    const r = rule({ eventTypes: ["Issue"], filters: [{ kind: "team", value: "" }] });
+    // team이 없는 이벤트
+    const noTeam = issue({ data: { id: "I2", title: "x" } });
+    expect(evaluateEvent(noTeam, [r], me).matched).toBe(false);
+  });
+
+  it("team 필터는 name으로도 매칭된다", () => {
+    const r = rule({ eventTypes: ["Issue"], filters: [{ kind: "team", value: "Engineering" }] });
+    expect(evaluateEvent(issue(), [r], me).matched).toBe(true);
+  });
+
+  it("assignee가 내가 아니면 매칭 안 됨", () => {
+    const other = issue({ data: { id: "I3", title: "x", assignee: { id: "user_other", name: "Bob" } } });
+    const r = rule({ eventTypes: ["Issue"], filters: [{ kind: "assignee" }] });
+    expect(evaluateEvent(other, [r], me).matched).toBe(false);
+  });
+
+  it("mentionsMe: 내 핸들이 없으면 매칭 안 됨", () => {
+    const comment: LinearWebhookEvent = {
+      action: "create", type: "Comment",
+      data: { id: "C2", body: "general note", issue: { title: "Fix login" }, user: { name: "Alice" } },
+    };
+    const r = rule({ eventTypes: ["Comment"], filters: [{ kind: "mentionsMe" }] });
+    expect(evaluateEvent(comment, [r], me).matched).toBe(false);
+  });
+
+  it("빈 규칙 배열이면 매칭 안 됨", () => {
+    expect(evaluateEvent(issue(), [], me).matched).toBe(false);
+  });
+
+  it("여러 규칙 중 첫 매칭 규칙이 반환된다", () => {
+    const r1 = rule({ id: "first", name: "first", eventTypes: ["Issue"], filters: [{ kind: "label", value: "urgent" }] });
+    const r2 = rule({ id: "second", name: "second", eventTypes: ["Issue"] });
+    const res = evaluateEvent(issue(), [r1, r2], me);
+    expect(res.matched).toBe(true);
+    expect(res.rule?.id).toBe("first");
+  });
 });

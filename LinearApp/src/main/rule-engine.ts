@@ -28,12 +28,13 @@ function matchFilter(f: FilterCondition, event: LinearWebhookEvent, me: Identity
   const v = (f.value ?? "").toLowerCase();
   switch (f.kind) {
     case "team":
-      return [d.team?.key, d.team?.name].some((x) => String(x ?? "").toLowerCase() === v);
+      return v !== "" && [d.team?.key, d.team?.name].some((x) => String(x ?? "").toLowerCase() === v);
     case "project":
-      return String(d.project?.name ?? "").toLowerCase() === v;
+      return v !== "" && String(d.project?.name ?? "").toLowerCase() === v;
     case "label":
       return labelNames(event).includes(v);
     case "assignee":
+      // value는 의도적으로 무시 — "assignee"는 항상 '나'를 의미
       return String(d.assignee?.id ?? "") === me.id && me.id !== "";
     case "mentionsMe": {
       const text = bodyText(event);
