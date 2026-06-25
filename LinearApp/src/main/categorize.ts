@@ -48,6 +48,7 @@ export function categorize(event: LinearWebhookEvent, me: Identity): Category[] 
     // 생성은 항상 알림, 업데이트는 의미 있는 변경이 있을 때만 (정렬/타임스탬프만 바뀐 건 무시)
     if (event.action !== "update" || projectChanges(event).length > 0) cats.push("projectUpdate");
   }
+  if (event.type === "Comment" && (event.data as any).projectUpdateId) cats.push("projectUpdate");
   return cats;
 }
 
@@ -67,11 +68,14 @@ export function formatNotification(event: LinearWebhookEvent): NotificationConte
   const issueUrl =
     (typeof event.url === "string" ? event.url : undefined) ??
     (typeof d.url === "string" ? d.url : undefined) ??
-    (typeof d.issue?.url === "string" ? d.issue.url : undefined);
+    (typeof d.issue?.url === "string" ? d.issue.url : undefined) ??
+    (typeof d.projectUpdate?.project?.url === "string" ? d.projectUpdate.project.url : undefined);
   if (event.type === "Comment") {
-    const issueTitle = d.issue?.title ? ` on "${d.issue.title}"` : "";
+    const onWhat = d.issue?.title
+      ? ` on "${d.issue.title}"`
+      : (d.projectUpdate ? ` · ${d.projectUpdate.project?.name ?? "프로젝트 업데이트"}` : "");
     return {
-      title: `${actor} commented${issueTitle}`,
+      title: `${actor} commented${onWhat}`,
       body: String(d.body ?? ""),
       issueUrl,
       identifier: d.issue?.identifier,

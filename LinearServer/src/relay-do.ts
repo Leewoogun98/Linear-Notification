@@ -66,9 +66,6 @@ export class RelayDurableObject {
     // 검증된 webhook 이벤트 (worker가 forward)
     if (url.pathname === "/broadcast" && request.method === "POST") {
       const event = (await request.json()) as LinearWebhookEvent;
-      console.log("[broadcast-pu] type=", event.type,
-        "projectUpdateId=", JSON.stringify((event.data as any)?.projectUpdateId),
-        "projectUpdate=", JSON.stringify((event.data as any)?.projectUpdate));
       const now = Date.now();
       const sockets = this.ctx.getWebSockets();
       const connected = sockets

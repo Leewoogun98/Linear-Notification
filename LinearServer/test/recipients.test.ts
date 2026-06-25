@@ -28,6 +28,10 @@ describe("computeRecipients", () => {
     const p = ev({ name: "P", leadId: "u_lead", creatorId: "u_creator" }, "Project");
     expect(computeRecipients(p, []).sort()).toEqual(["u_creator", "u_lead"]);
   });
+  it("프로젝트 업데이트 코멘트 → 업데이트 작성자 포함", () => {
+    const c = ev({ body: "good", projectUpdateId: "pu1", projectUpdate: { id: "pu1", userId: "u_author", project: { url: "x" } } }, "Comment");
+    expect(computeRecipients(c, [])).toContain("u_author");
+  });
   it("관련 정보 없으면 빈 배열", () => {
     expect(computeRecipients(ev({ title: "x" }), [])).toEqual([]);
   });

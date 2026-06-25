@@ -28,6 +28,11 @@ describe("categorize", () => {
     expect(cats).toContain("mention");
     expect(cats).not.toContain("comment");
   });
+  it("프로젝트 업데이트 코멘트 → projectUpdate 카테고리", () => {
+    const c: LinearWebhookEvent = { action: "create", type: "Comment",
+      data: { body: "good", projectUpdateId: "pu1", projectUpdate: { project: { name: "P", url: "https://linear.app/x/project/p" } }, user: { name: "Bob" } } };
+    expect(categorize(c, me)).toContain("projectUpdate");
+  });
 });
 
 describe("representativeCategory", () => {
@@ -74,6 +79,11 @@ describe("formatNotification", () => {
       actor: { id: "ux", name: "Alice" },
     };
     expect(formatNotification(e).issueUrl).toBe("https://linear.app/top/ENG-9");
+  });
+  it("프로젝트 업데이트 코멘트의 url은 프로젝트 url", () => {
+    const c: LinearWebhookEvent = { action: "create", type: "Comment",
+      data: { body: "good", projectUpdateId: "pu1", projectUpdate: { project: { name: "P", url: "https://linear.app/x/project/p" } }, user: { name: "Bob" } } };
+    expect(formatNotification(c).issueUrl).toBe("https://linear.app/x/project/p");
   });
 });
 
