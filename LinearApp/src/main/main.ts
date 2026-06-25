@@ -160,3 +160,6 @@ app.whenReady().then(() => {
 });
 
 app.on("window-all-closed", () => { /* 트레이 상주 */ });
+
+// macOS: 창을 닫아도 앱은 살아있고, dock 아이콘을 다시 누르면 창을 다시 연다.
+app.on("activate", () => openWindow());
