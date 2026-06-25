@@ -1,4 +1,5 @@
 import { app, BrowserWindow, Tray, Menu, ipcMain, nativeImage, shell } from "electron";
+import { autoUpdater } from "electron-updater";
 import { join } from "node:path";
 import { loadSettings, saveSettings } from "./config-store";
 import { categorize, representativeCategory, formatNotification, shouldNotify } from "./categorize";
@@ -50,6 +51,15 @@ function updateBadge() {
 function pushNotiUpdate() {
   if (win && !win.isDestroyed()) win.webContents.send("noti:updated");
   updateBadge();
+}
+
+// 앱을 켤 때 한 번 GitHub Release에서 새 버전을 확인하고, 받아지면 알림을 띄운 뒤
+// 다음 종료 시 자동 적용한다. 현재는 Windows 전용 — 맥은 ad-hoc 서명이라
+// Squirrel.Mac이 업데이트 적용을 거부하므로 정식 코드 서명을 갖추기 전까지 제외한다.
+function initAutoUpdate() {
+  if (!app.isPackaged || process.platform !== "win32") return;
+  autoUpdater.on("error", (err) => console.error("[autoUpdater]", err));
+  autoUpdater.checkForUpdatesAndNotify().catch((err) => console.error("[autoUpdater]", err));
 }
 
 function buildTray() {
@@ -157,6 +167,7 @@ app.whenReady().then(() => {
   buildTray();
   updateBadge();
   openWindow();
+  initAutoUpdate();
 });
 
 app.on("window-all-closed", () => { /* 트레이 상주 */ });

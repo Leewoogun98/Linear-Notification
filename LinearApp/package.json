@@ -1,7 +1,7 @@
 {
   "name": "linear-noti-app",
   "productName": "Linear Noti",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "private": true,
   "main": "dist/main/main.js",
   "scripts": {
@@ -21,6 +21,7 @@
   },
   "dependencies": {
     "electron-store": "^8.2.0",
+    "electron-updater": "^6.3.9",
     "ws": "^8.17.0"
   },
   "build": {
@@ -33,6 +34,11 @@
       "output": "release"
     },
     "afterPack": "build/afterPack.js",
+    "publish": {
+      "provider": "github",
+      "owner": "Leewoogun98",
+      "repo": "Linear-Notification"
+    },
     "mac": {
       "target": "dmg",
       "icon": "build/icon.icns"
