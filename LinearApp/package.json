@@ -32,6 +32,7 @@
     "directories": {
       "output": "release"
     },
+    "afterPack": "build/afterPack.js",
     "mac": {
       "target": "dmg",
       "icon": "build/icon.icns"
