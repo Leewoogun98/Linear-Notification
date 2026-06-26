@@ -33,7 +33,9 @@ jobs:
         run: npm test
 
       - name: Build installer (electron-builder)
-        run: npm run dist
+        # --publish never: electron-builder가 직접 GitHub에 올리지 않게 한다(업로드는 release 잡의 softprops가 담당).
+        # publish 설정은 latest.yml(자동 업데이트 메타데이터) 생성을 위해 유지하고, 이 플래그로 업로드만 끈다.
+        run: npm run build && npx electron-builder --publish never
         env:
           # 미서명 빌드 — macOS 코드사이닝 자동탐색 끄기(인증서 없음)
           CSC_IDENTITY_AUTO_DISCOVERY: false
