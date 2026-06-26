@@ -49,10 +49,23 @@ export function categorize(event: LinearWebhookEvent, me: Identity): Category[] 
     if (event.action !== "update" || projectChanges(event).length > 0) cats.push("projectUpdate");
   }
   if (event.type === "Comment" && (event.data as any).projectUpdateId) cats.push("projectUpdate");
+  // 리액션: 누군가 내 코멘트/프로젝트 업데이트에 이모지를 "추가"했을 때만(제거는 제외).
+  // 수신자 계산은 릴레이(recipients)가 원 글 작성자로 라우팅하므로, 여기 도착했다는 건 내 글이라는 뜻.
+  if (event.type === "Reaction" && event.action === "create") cats.push("reaction");
   return cats;
 }
 
-const PRIORITY: Category[] = ["mention", "projectUpdate"];
+const PRIORITY: Category[] = ["mention", "projectUpdate", "reaction"];
+
+// Linear emoji 필드는 ":+1:" 같은 shortcode로 온다. 자주 쓰는 것만 실제 이모지로.
+const EMOJI: Record<string, string> = {
+  "+1": "👍", "-1": "👎", heart: "❤️", tada: "🎉", eyes: "👀",
+  rocket: "🚀", fire: "🔥", joy: "😂", clap: "👏", white_check_mark: "✅",
+};
+function emojiText(code: unknown): string {
+  const c = String(code ?? "").replace(/:/g, "");
+  return EMOJI[c] ?? (c ? `:${c}:` : "👍");
+}
 export function representativeCategory(cats: Category[]): Category | null {
   for (const c of PRIORITY) if (cats.includes(c)) return c;
   return null;
@@ -69,7 +82,20 @@ export function formatNotification(event: LinearWebhookEvent): NotificationConte
     (typeof event.url === "string" ? event.url : undefined) ??
     (typeof d.url === "string" ? d.url : undefined) ??
     (typeof d.issue?.url === "string" ? d.issue.url : undefined) ??
+    (typeof d.comment?.issue?.url === "string" ? d.comment.issue.url : undefined) ??
     (typeof d.projectUpdate?.project?.url === "string" ? d.projectUpdate.project.url : undefined);
+  if (event.type === "Reaction") {
+    const e = emojiText(d.emoji);
+    const target = d.comment ? "내 코멘트" : (d.projectUpdate ? "내 프로젝트 업데이트" : "내 게시물");
+    const detail = d.comment
+      ? String(d.comment.body ?? "")
+      : (d.projectUpdate ? (d.projectUpdate.project?.name ?? String(d.projectUpdate.body ?? "")) : "");
+    return {
+      title: `${actor}님이 ${target}에 ${e} 리액션`,
+      body: detail,
+      issueUrl,
+    };
+  }
   if (event.type === "Comment") {
     const onWhat = d.issue?.title
       ? ` on "${d.issue.title}"`

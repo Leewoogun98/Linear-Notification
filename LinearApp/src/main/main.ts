@@ -15,12 +15,13 @@ const settingsFile = () => join(app.getPath("userData"), "settings.json");
 const notiFile = () => join(app.getPath("userData"), "notifications.json");
 
 const ACCENT: Record<Category, string> = {
-  mention: "#b9a7ff", projectUpdate: "#7fe0c0",
+  mention: "#b9a7ff", projectUpdate: "#7fe0c0", reaction: "#ffcc66",
 };
 
 const HEADING: Record<Category, string> = {
   mention: "멘션이용^^",
   projectUpdate: "프로젝트용^^",
+  reaction: "리액션이용^^",
 };
 
 let tray: Tray | null = null;
@@ -131,6 +132,7 @@ app.whenReady().then(() => {
     }
     await shell.openExternal(url);
   });
+  ipcMain.handle("app:version", () => app.getVersion());
   ipcMain.handle("settings:test", () => {
     notifications.show({ heading: "테스트^^", title: "테스트 알림", body: "정중앙 알림이 정상 동작합니다. 본문 글씨가 이만큼 커졌어요!", accent: ACCENT.mention });
   });

@@ -1,4 +1,4 @@
-type Category = "mention" | "projectUpdate";
+type Category = "mention" | "projectUpdate" | "reaction";
 interface StoredNotification {
   id: string;
   category: Category;
@@ -27,6 +27,7 @@ declare const api: {
   settings: { getCategories: () => Promise<Category[]>; setCategories: (c: Category[]) => Promise<void>; getMuteOwn: () => Promise<boolean>; setMuteOwn: (v: boolean) => Promise<void>; getPosition: () => Promise<string>; setPosition: (p: string) => Promise<void> };
   openIssue: (url: string) => Promise<void>;
   test: () => Promise<void>;
+  appVersion: () => Promise<string>;
 };
 
 const $ = (id: string) => document.getElementById(id)!;
@@ -38,8 +39,10 @@ function show(v: keyof typeof views) {
 const CAT_META: Record<Category, { icon: string; label: string; tagBg: string; iconColor: string }> = {
   mention: { icon: "@", label: "나를 멘션", tagBg: "#3a3170", iconColor: "#b9a7ff" },
   projectUpdate: { icon: "▤", label: "프로젝트 업데이트", tagBg: "#143a30", iconColor: "#7fe0c0" },
+  reaction: { icon: "♥", label: "내 글에 리액션", tagBg: "#4a3a14", iconColor: "#ffcc66" },
 };
-const ALL: Category[] = ["mention", "projectUpdate"];
+const ALL: Category[] = ["mention", "projectUpdate", "reaction"];
+const CAT_SHORT: Record<Category, string> = { mention: "멘션", projectUpdate: "프로젝트", reaction: "리액션" };
 
 function relTime(ts: number): string {
   const s = Math.floor((Date.now() - ts) / 1000);
@@ -49,15 +52,43 @@ function relTime(ts: number): string {
   return `${Math.floor(s / 86400)}일 전`;
 }
 
+let homeFilter: Category | "all" = "all";
+
 async function renderHome() {
   const items = await api.notifications.list();
   const unread = await api.notifications.unread();
   const pill = $("unreadPill");
   if (unread > 0) { pill.textContent = `${unread} 안읽음`; pill.hidden = false; } else { pill.hidden = true; }
-  ($("empty") as HTMLElement).hidden = items.length > 0;
+
+  // 카테고리별 개수
+  const counts: Record<string, number> = { all: items.length, mention: 0, projectUpdate: 0, reaction: 0 };
+  for (const n of items) counts[n.category] = (counts[n.category] ?? 0) + 1;
+
+  // 상단 필터 칩 (전체 + 3 카테고리)
+  const chipDefs: { key: Category | "all"; icon: string; label: string; color: string }[] = [
+    { key: "all", icon: "전체", label: "전체", color: "var(--accent)" },
+    ...ALL.map((c) => ({ key: c, icon: CAT_SHORT[c], label: CAT_META[c].label, color: CAT_META[c].iconColor })),
+  ];
+  const filters = $("filters");
+  filters.innerHTML = "";
+  for (const c of chipDefs) {
+    const active = homeFilter === c.key;
+    const chip = document.createElement("button");
+    chip.className = "chip" + (active ? " active" : "");
+    chip.title = c.label;
+    if (active) { chip.style.color = c.color; chip.style.borderColor = c.color; }
+    chip.innerHTML = `<span class="ci">${c.icon}</span><span class="cnt">${counts[c.key] ?? 0}</span>`;
+    chip.addEventListener("click", () => { homeFilter = c.key; renderHome(); });
+    filters.appendChild(chip);
+  }
+
+  const shown = homeFilter === "all" ? items : items.filter((n) => n.category === homeFilter);
+  const emptyEl = $("empty") as HTMLElement;
+  emptyEl.hidden = shown.length > 0;
+  emptyEl.textContent = items.length === 0 ? "아직 받은 알림이 없어요" : "이 분류에 알림이 없어요";
   const list = $("list");
   list.innerHTML = "";
-  for (const n of items) {
+  for (const n of shown) {
     const m = CAT_META[n.category as Category] ?? CAT_META.mention;
     const card = document.createElement("div");
     card.className = "ncard" + (n.read ? "" : " unread");
@@ -98,6 +129,8 @@ async function renderSettings() {
     });
     cats.appendChild(row);
   }
+
+  ($("verLabel") as HTMLElement).textContent = `버전 ${await api.appVersion()}`;
 
   const mute = await api.settings.getMuteOwn();
   const muteRow = $("muteRow");

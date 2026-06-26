@@ -1,6 +1,6 @@
-export type Category = "mention" | "projectUpdate";
+export type Category = "mention" | "projectUpdate" | "reaction";
 export type PopupPosition = "center" | "top-right" | "top-left" | "bottom-right" | "bottom-left";
-export const ALL_CATEGORIES: Category[] = ["mention", "projectUpdate"];
+export const ALL_CATEGORIES: Category[] = ["mention", "projectUpdate", "reaction"];
 
 export interface Identity {
   id: string;
@@ -21,7 +21,7 @@ export const DEFAULT_SETTINGS: Settings = {
   relayUrl: "wss://linear-noti-relay.bome00519.workers.dev",
   sessionToken: "",
   me: { id: "", name: "", displayName: "" },
-  enabledCategories: ["mention", "projectUpdate"],
+  enabledCategories: ["mention", "projectUpdate", "reaction"],
   muteOwnChanges: true,
   popupPosition: "center",
 };

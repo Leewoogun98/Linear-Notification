@@ -22,8 +22,13 @@ export function computeRecipients(event: LinearWebhookEvent, connected: Connecte
   add(d.leadId);
   add(d.creatorId);
   // 코멘트가 달린 프로젝트 업데이트의 작성자에게 전달 (내가 올린 업데이트에 달린 코멘트 알림)
+  // 리액션(Reaction) 이벤트에서도 projectUpdate.userId = 업데이트 작성자라 그대로 활용된다.
   add(d.projectUpdate?.userId);
   add(d.projectUpdate?.user?.id);
+  // 리액션 대상이 코멘트면 그 코멘트 작성자에게 전달 (내 코멘트에 달린 리액션 알림).
+  // Reaction payload는 data.comment.userId 에 원 코멘트 작성자를 담는다.
+  add(d.comment?.userId);
+  add(d.comment?.user?.id);
   if (Array.isArray(d.issue?.subscriberIds)) d.issue.subscriberIds.forEach(add);
   add(d.issue?.assignee?.id);
 

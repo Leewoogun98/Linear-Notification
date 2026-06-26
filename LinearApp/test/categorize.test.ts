@@ -33,6 +33,18 @@ describe("categorize", () => {
       data: { body: "good", projectUpdateId: "pu1", projectUpdate: { project: { name: "P", url: "https://linear.app/x/project/p" } }, user: { name: "Bob" } } };
     expect(categorize(c, me)).toContain("projectUpdate");
   });
+  it("리액션 추가 → reaction 카테고리", () => {
+    const r: LinearWebhookEvent = { action: "create", type: "Reaction",
+      data: { emoji: "+1", comment: { body: "코멘트33", userId: "user_me" }, user: { name: "Bob" } },
+      actor: { id: "bob", name: "Bob" } };
+    expect(categorize(r, me)).toContain("reaction");
+  });
+  it("리액션 제거(remove)는 알림하지 않음", () => {
+    const r: LinearWebhookEvent = { action: "remove", type: "Reaction",
+      data: { emoji: "+1", comment: { body: "코멘트33", userId: "user_me" } },
+      actor: { id: "bob", name: "Bob" } };
+    expect(categorize(r, me)).not.toContain("reaction");
+  });
 });
 
 describe("representativeCategory", () => {
@@ -66,6 +78,15 @@ describe("formatNotification", () => {
     const r = formatNotification(c);
     expect(r.title).toContain("Bob");
     expect(r.body).toContain("looks good");
+  });
+  it("리액션: 행위자 + 이모지 + 대상 코멘트 본문", () => {
+    const r: LinearWebhookEvent = { action: "create", type: "Reaction",
+      data: { emoji: "+1", comment: { body: "코멘트33", userId: "user_me" }, user: { name: "Bob" } },
+      actor: { id: "bob", name: "Bob" } };
+    const out = formatNotification(r);
+    expect(out.title).toContain("Bob");
+    expect(out.title).toContain("👍");
+    expect(out.body).toContain("코멘트33");
   });
   it("코멘트: 부모 이슈 url을 issueUrl로 사용", () => {
     const c: LinearWebhookEvent = { action: "create", type: "Comment",

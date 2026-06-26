@@ -26,4 +26,5 @@ contextBridge.exposeInMainWorld("api", {
   },
   openIssue: (url: string): Promise<void> => ipcRenderer.invoke("issue:open", url),
   test: (): Promise<void> => ipcRenderer.invoke("settings:test"),
+  appVersion: (): Promise<string> => ipcRenderer.invoke("app:version"),
 });

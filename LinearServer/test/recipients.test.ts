@@ -35,4 +35,12 @@ describe("computeRecipients", () => {
   it("관련 정보 없으면 빈 배열", () => {
     expect(computeRecipients(ev({ title: "x" }), [])).toEqual([]);
   });
+  it("리액션(코멘트) → 코멘트 작성자 포함", () => {
+    const r = ev({ emoji: "+1", comment: { id: "c1", userId: "u_author" }, userId: "u_reactor" }, "Reaction");
+    expect(computeRecipients(r, [])).toContain("u_author");
+  });
+  it("리액션(프로젝트 업데이트) → 업데이트 작성자 포함", () => {
+    const r = ev({ emoji: "+1", projectUpdate: { id: "pu1", userId: "u_author" }, userId: "u_reactor" }, "Reaction");
+    expect(computeRecipients(r, [])).toContain("u_author");
+  });
 });
