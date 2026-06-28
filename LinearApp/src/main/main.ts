@@ -127,6 +127,7 @@ app.whenReady().then(() => {
   ipcMain.handle("noti:list", () => store.list());
   ipcMain.handle("noti:unread", () => store.unreadCount());
   ipcMain.handle("noti:markRead", (_e, id: string) => { store.markRead(id); updateBadge(); });
+  ipcMain.handle("noti:markAllRead", () => { store.markAllRead(); pushNotiUpdate(); });
   ipcMain.handle("noti:clearAll", () => { store.clearAll(); pushNotiUpdate(); });
 
   ipcMain.handle("cat:get", () => settings.enabledCategories);

@@ -13,6 +13,7 @@ contextBridge.exposeInMainWorld("api", {
     list: (): Promise<StoredNotification[]> => ipcRenderer.invoke("noti:list"),
     unread: (): Promise<number> => ipcRenderer.invoke("noti:unread"),
     markRead: (id: string): Promise<void> => ipcRenderer.invoke("noti:markRead", id),
+    markAllRead: (): Promise<void> => ipcRenderer.invoke("noti:markAllRead"),
     clearAll: (): Promise<void> => ipcRenderer.invoke("noti:clearAll"),
     onUpdate: (cb: () => void) => ipcRenderer.on("noti:updated", () => cb()),
   },

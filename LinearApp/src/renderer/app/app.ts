@@ -21,6 +21,7 @@ declare const api: {
     list: () => Promise<StoredNotification[]>;
     unread: () => Promise<number>;
     markRead: (id: string) => Promise<void>;
+    markAllRead: () => Promise<void>;
     clearAll: () => Promise<void>;
     onUpdate: (cb: () => void) => void;
   };
@@ -170,6 +171,7 @@ $("loginBtn").addEventListener("click", async () => {
 });
 $("gearBtn").addEventListener("click", () => { show("settings"); renderSettings(); });
 $("backBtn").addEventListener("click", () => { show("home"); renderHome(); });
+$("markAllBtn").addEventListener("click", () => { api.notifications.markAllRead(); });
 $("clearAll").addEventListener("click", () => { api.notifications.clearAll(); });
 $("logoutBtn").addEventListener("click", async () => { await api.auth.logout(); show("login"); });
 $("testBtn").addEventListener("click", () => api.test());

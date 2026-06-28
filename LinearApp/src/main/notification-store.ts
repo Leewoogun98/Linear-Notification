@@ -54,6 +54,12 @@ export class NotificationStore {
     }
   }
 
+  markAllRead(): void {
+    let changed = false;
+    for (const it of this.items) if (!it.read) { it.read = true; changed = true; }
+    if (changed) this.persist();
+  }
+
   clearAll(): void {
     this.items = [];
     this.persist();

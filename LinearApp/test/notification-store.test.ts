@@ -37,6 +37,15 @@ describe("NotificationStore", () => {
     expect(s.unreadCount()).toBe(0);
   });
 
+  it("markAllRead로 모두 읽음 처리 (목록은 유지, unreadCount 0)", () => {
+    const s = new NotificationStore(file);
+    s.add(sample({ title: "a" }));
+    s.add(sample({ title: "b" }));
+    s.markAllRead();
+    expect(s.unreadCount()).toBe(0);
+    expect(s.list().length).toBe(2);
+  });
+
   it("clearAll 후 비워짐", () => {
     const s = new NotificationStore(file);
     s.add(sample());
