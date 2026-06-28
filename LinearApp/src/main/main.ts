@@ -41,11 +41,33 @@ function openWindow() {
     },
   });
   win.loadFile(join(__dirname, "../renderer/app/index.html"));
+  // 새 창에는 작업표시줄 오버레이를 다시 적용해야 한다(오버레이는 창 단위).
+  updateBadge();
 }
+
+// 빌드 때 생성한 안읽음 배지 PNG(dist/badges/)를 캐시해서 로드.
+const badgeDir = join(__dirname, "../badges");
+const imgCache = new Map<string, ReturnType<typeof nativeImage.createFromPath>>();
+function badgeImg(file: string) {
+  let img = imgCache.get(file);
+  if (!img) { img = nativeImage.createFromPath(join(badgeDir, file)); imgCache.set(file, img); }
+  return img;
+}
+const trayKey = (n: number) => (n <= 0 ? "tray-base" : n <= 9 ? `tray-${n}` : "tray-9plus");
+const overlayKey = (n: number) => (n <= 9 ? `overlay-${n}` : "overlay-9plus");
 
 function updateBadge() {
   const n = store.unreadCount();
-  if (app.dock) app.dock.setBadge(n > 0 ? String(n) : "");
+  if (process.platform === "darwin") {
+    // macOS: dock 아이콘 텍스트 배지
+    if (app.dock) app.dock.setBadge(n > 0 ? String(n) : "");
+  } else if (process.platform === "win32") {
+    // Windows: 트레이 아이콘에 숫자를 구워넣고(항상 보임), 창이 있으면 작업표시줄 오버레이도 표시
+    if (tray) tray.setImage(badgeImg(`${trayKey(n)}.png`));
+    if (win && !win.isDestroyed()) {
+      win.setOverlayIcon(n > 0 ? badgeImg(`${overlayKey(n)}.png`) : null, n > 0 ? `안읽음 ${n}개` : "");
+    }
+  }
   if (tray) tray.setToolTip(n > 0 ? `Linear Noti — 안읽음 ${n}` : "Linear Noti");
 }
 
@@ -64,7 +86,9 @@ function initAutoUpdate() {
 }
 
 function buildTray() {
-  tray = new Tray(nativeImage.createEmpty());
+  // Windows는 실제 트레이 아이콘이 필요하다(이후 updateBadge가 안읽음 수에 따라 교체).
+  const initial = process.platform === "win32" ? badgeImg("tray-base.png") : nativeImage.createEmpty();
+  tray = new Tray(initial);
   tray.setToolTip("Linear Noti");
   tray.setContextMenu(Menu.buildFromTemplate([
     { label: "열기", click: openWindow },
