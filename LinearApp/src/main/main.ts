@@ -1,4 +1,4 @@
-import { app, BrowserWindow, Tray, Menu, ipcMain, nativeImage, shell } from "electron";
+import { app, BrowserWindow, Tray, Menu, ipcMain, nativeImage, shell, powerMonitor } from "electron";
 import { autoUpdater } from "electron-updater";
 import { join } from "node:path";
 import { loadSettings, saveSettings } from "./config-store";
@@ -190,6 +190,11 @@ app.whenReady().then(() => {
     },
   );
   client.start();
+
+  // 절전에서 깨어나거나 화면 잠금을 풀면 즉시 재연결한다(좀비 소켓 방지).
+  // 하트비트(ws-client)가 안전망이고, 이건 더 빠른 트리거다. 맥·윈도우 공통 동작.
+  powerMonitor.on("resume", () => client.reconnect());
+  powerMonitor.on("unlock-screen", () => client.reconnect());
 
   buildTray();
   updateBadge();
