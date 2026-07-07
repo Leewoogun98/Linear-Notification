@@ -10,7 +10,9 @@ const { FakeWS, sockets } = vi.hoisted(() => {
     readyState = 1;
     url: string;
     ping = vi.fn();
-    terminate = vi.fn(() => { this.readyState = 3; this.emit("close"); });
+    // 실제 ws는 CONNECTING/부적절한 시점에 terminate 하면 'error'를 발생시킨다.
+    // ('WebSocket was closed before the connection was established')
+    terminate = vi.fn(() => { this.readyState = 3; this.emit("error", new Error("aborted")); this.emit("close"); });
     close = vi.fn(() => { this.readyState = 3; this.emit("close"); });
     constructor(url: string) { super(); this.url = url; sockets.push(this); }
   }
@@ -63,5 +65,12 @@ describe("RelayClient 하트비트", () => {
     client.reconnect();
     expect(sockets.length).toBe(2);
     expect(sockets[0].terminate).toHaveBeenCalled();
+  });
+
+  it("아직 CONNECTING 인 소켓을 정리해도 unhandled 'error'로 죽지 않는다", () => {
+    client = new RelayClient(config, noop, noop, noop);
+    client.start();               // 소켓 생성, open 전(=CONNECTING)
+    // cleanupSocket 이 terminate → 'error' 를 발생시켜도 no-op 핸들러로 안전해야 한다.
+    expect(() => client.reconnect()).not.toThrow();
   });
 });

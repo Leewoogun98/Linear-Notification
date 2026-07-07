@@ -86,6 +86,11 @@ export class RelayClient {
     const ws = this.ws;
     if (ws) {
       ws.removeAllListeners(); // 이 소켓의 close/error가 더는 재연결을 트리거하지 않도록
+      // 아직 CONNECTING 인 소켓을 terminate 하면 ws가 'error'
+      // ('WebSocket was closed before the connection was established')를 발생시킨다.
+      // 리스너를 다 지운 상태라 처리기가 없으면 unhandled 'error'로 앱이 죽으므로,
+      // no-op 핸들러를 붙여 안전하게 무시한다.
+      ws.on("error", () => {});
       try { ws.terminate(); } catch { /* 무시 */ }
       this.ws = undefined;
     }
