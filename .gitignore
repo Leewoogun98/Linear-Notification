@@ -4,3 +4,10 @@ dist/
 .wrangler/
 *.log
 release/
+
+# 로컬 시크릿 — 절대 커밋 금지 (wrangler 로컬 시크릿 파일 / 환경변수 파일)
+.dev.vars
+.dev.vars.*
+.env
+.env.*
+!.env.example
