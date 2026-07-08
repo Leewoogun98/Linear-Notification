@@ -1,4 +1,4 @@
-import { app, BrowserWindow, Tray, Menu, ipcMain, nativeImage, shell, powerMonitor } from "electron";
+import { app, BrowserWindow, Tray, Menu, ipcMain, nativeImage, shell, powerMonitor, dialog } from "electron";
 import { autoUpdater } from "electron-updater";
 import { join } from "node:path";
 import { loadSettings, saveSettings } from "./config-store";
@@ -82,7 +82,30 @@ function pushNotiUpdate() {
 function initAutoUpdate() {
   if (!app.isPackaged || process.platform !== "win32") return;
   autoUpdater.on("error", (err) => console.error("[autoUpdater]", err));
-  autoUpdater.checkForUpdatesAndNotify().catch((err) => console.error("[autoUpdater]", err));
+
+  // 다운로드 완료 시 앱 실행 중에 다이얼로그를 띄운다("지금 재시작 / 나중에").
+  // 버전별로 1회만 물어본다(더 새 버전이 오면 다시 물어봄). "나중에"는 다음 완전 종료 시 자동 적용.
+  let promptedVersion: string | null = null;
+  autoUpdater.on("update-downloaded", (info) => {
+    if (promptedVersion === info.version) return;
+    promptedVersion = info.version;
+    dialog.showMessageBox({
+      type: "info",
+      buttons: ["지금 재시작", "나중에"],
+      defaultId: 0,
+      cancelId: 1,
+      title: "업데이트 준비 완료",
+      message: `새 버전 ${info.version} 이(가) 준비됐어요.`,
+      detail: "지금 재시작하면 바로 적용됩니다. '나중에'를 누르면 앱을 완전히 종료할 때 적용돼요.",
+    }).then((r) => {
+      if (r.response === 0) autoUpdater.quitAndInstall();
+    }).catch((err) => console.error("[autoUpdater]", err));
+  });
+
+  // 켤 때 1회 + 이후 4시간마다 확인 (재시작 없이도 새 버전을 감지).
+  const check = () => autoUpdater.checkForUpdates().catch((err) => console.error("[autoUpdater]", err));
+  check();
+  setInterval(check, 4 * 60 * 60 * 1000);
 }
 
 function buildTray() {
